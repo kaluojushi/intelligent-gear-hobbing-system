@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.device.mapper.DeviceHobMapper">
+    
+    <resultMap type="DeviceHob" id="DeviceHobResult">
+        <result property="id"    column="id"    />
+        <result property="hobName"    column="hob_name"    />
+        <result property="hobHeads"    column="hob_heads"    />
+        <result property="hobModule"    column="hob_module"    />
+        <result property="hobPressureAngle"    column="hob_pressure_angle"    />
+        <result property="hobSpiralAngle"    column="hob_spiral_angle"    />
+        <result property="hobLength"    column="hob_length"    />
+        <result property="hobOuterDiameter"    column="hob_outer_diameter"    />
+        <result property="notes"    column="notes"    />
+    </resultMap>
+
+    <sql id="selectDeviceHobVo">
+        select id, hob_name, hob_heads, hob_module, hob_pressure_angle, hob_spiral_angle, hob_length, hob_outer_diameter, notes from device_hob
+    </sql>
+
+    <select id="selectDeviceHobList" parameterType="DeviceHob" resultMap="DeviceHobResult">
+        <include refid="selectDeviceHobVo"/>
+        <where>  
+            <if test="hobName != null  and hobName != ''"> and hob_name like concat('%', #{hobName}, '%')</if>
+            <if test="hobHeads != null  and hobHeads != ''"> and hob_heads = #{hobHeads}</if>
+            <if test="hobModule != null  and hobModule != ''"> and hob_module = #{hobModule}</if>
+        </where>
+    </select>
+    
+    <select id="selectDeviceHobById" parameterType="Long" resultMap="DeviceHobResult">
+        <include refid="selectDeviceHobVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertDeviceHob" parameterType="DeviceHob" useGeneratedKeys="true" keyProperty="id">
+        insert into device_hob
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="hobName != null">hob_name,</if>
+            <if test="hobHeads != null">hob_heads,</if>
+            <if test="hobModule != null">hob_module,</if>
+            <if test="hobPressureAngle != null">hob_pressure_angle,</if>
+            <if test="hobSpiralAngle != null">hob_spiral_angle,</if>
+            <if test="hobLength != null">hob_length,</if>
+            <if test="hobOuterDiameter != null">hob_outer_diameter,</if>
+            <if test="notes != null">notes,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="hobName != null">#{hobName},</if>
+            <if test="hobHeads != null">#{hobHeads},</if>
+            <if test="hobModule != null">#{hobModule},</if>
+            <if test="hobPressureAngle != null">#{hobPressureAngle},</if>
+            <if test="hobSpiralAngle != null">#{hobSpiralAngle},</if>
+            <if test="hobLength != null">#{hobLength},</if>
+            <if test="hobOuterDiameter != null">#{hobOuterDiameter},</if>
+            <if test="notes != null">#{notes},</if>
+         </trim>
+    </insert>
+
+    <update id="updateDeviceHob" parameterType="DeviceHob">
+        update device_hob
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="hobName != null">hob_name = #{hobName},</if>
+            <if test="hobHeads != null">hob_heads = #{hobHeads},</if>
+            <if test="hobModule != null">hob_module = #{hobModule},</if>
+            <if test="hobPressureAngle != null">hob_pressure_angle = #{hobPressureAngle},</if>
+            <if test="hobSpiralAngle != null">hob_spiral_angle = #{hobSpiralAngle},</if>
+            <if test="hobLength != null">hob_length = #{hobLength},</if>
+            <if test="hobOuterDiameter != null">hob_outer_diameter = #{hobOuterDiameter},</if>
+            <if test="notes != null">notes = #{notes},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteDeviceHobById" parameterType="Long">
+        delete from device_hob where id = #{id}
+    </delete>
+
+    <delete id="deleteDeviceHobByIds" parameterType="String">
+        delete from device_hob where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>
