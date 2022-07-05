@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.device.mapper.DeviceMachineMapper">
+    
+    <resultMap type="DeviceMachine" id="DeviceMachineResult">
+        <result property="id"    column="id"    />
+        <result property="machineName"    column="machine_name"    />
+        <result property="machineDescribe"    column="machine_describe"    />
+        <result property="maxWorkpieceDiameter"    column="max_workpiece_diameter"    />
+        <result property="maxWorkpieceModulus"    column="max_workpiece_modulus"    />
+        <result property="cncId"    column="cnc_id"    />
+        <result property="notes"    column="notes"    />
+    </resultMap>
+
+    <sql id="selectDeviceMachineVo">
+        select id, machine_name, machine_describe, max_workpiece_diameter, max_workpiece_modulus, cnc_id, notes from device_machine
+    </sql>
+
+    <select id="selectDeviceMachineList" parameterType="DeviceMachine" resultMap="DeviceMachineResult">
+        <include refid="selectDeviceMachineVo"/>
+        <where>  
+            <if test="machineName != null  and machineName != ''"> and machine_name like concat('%', #{machineName}, '%')</if>
+            <if test="cncId != null "> and cnc_id = #{cncId}</if>
+        </where>
+    </select>
+    
+    <select id="selectDeviceMachineById" parameterType="Long" resultMap="DeviceMachineResult">
+        <include refid="selectDeviceMachineVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertDeviceMachine" parameterType="DeviceMachine" useGeneratedKeys="true" keyProperty="id">
+        insert into device_machine
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="machineName != null">machine_name,</if>
+            <if test="machineDescribe != null">machine_describe,</if>
+            <if test="maxWorkpieceDiameter != null">max_workpiece_diameter,</if>
+            <if test="maxWorkpieceModulus != null">max_workpiece_modulus,</if>
+            <if test="cncId != null">cnc_id,</if>
+            <if test="notes != null">notes,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="machineName != null">#{machineName},</if>
+            <if test="machineDescribe != null">#{machineDescribe},</if>
+            <if test="maxWorkpieceDiameter != null">#{maxWorkpieceDiameter},</if>
+            <if test="maxWorkpieceModulus != null">#{maxWorkpieceModulus},</if>
+            <if test="cncId != null">#{cncId},</if>
+            <if test="notes != null">#{notes},</if>
+         </trim>
+    </insert>
+
+    <update id="updateDeviceMachine" parameterType="DeviceMachine">
+        update device_machine
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="machineName != null">machine_name = #{machineName},</if>
+            <if test="machineDescribe != null">machine_describe = #{machineDescribe},</if>
+            <if test="maxWorkpieceDiameter != null">max_workpiece_diameter = #{maxWorkpieceDiameter},</if>
+            <if test="maxWorkpieceModulus != null">max_workpiece_modulus = #{maxWorkpieceModulus},</if>
+            <if test="cncId != null">cnc_id = #{cncId},</if>
+            <if test="notes != null">notes = #{notes},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteDeviceMachineById" parameterType="Long">
+        delete from device_machine where id = #{id}
+    </delete>
+
+    <delete id="deleteDeviceMachineByIds" parameterType="String">
+        delete from device_machine where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

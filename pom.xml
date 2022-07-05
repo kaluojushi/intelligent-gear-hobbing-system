@@ -199,10 +199,31 @@
                 <version>${ruoyi.version}</version>
             </dependency>
 
+            <!-- 知识库系统模块-->
+            <dependency>
+                <groupId>com.ruoyi</groupId>
+                <artifactId>IGHS-knowledge</artifactId>
+                <version>${ruoyi.version}</version>
+            </dependency>
+
+            <!-- 自动编程系统模块-->
+            <dependency>
+                <groupId>com.ruoyi</groupId>
+                <artifactId>IGHS-programming</artifactId>
+                <version>${ruoyi.version}</version>
+            </dependency>
+
             <!-- 设备管理系统模块-->
             <dependency>
                 <groupId>com.ruoyi</groupId>
                 <artifactId>IGHS-device</artifactId>
+                <version>${ruoyi.version}</version>
+            </dependency>
+
+            <!-- 算法管理系统模块-->
+            <dependency>
+                <groupId>com.ruoyi</groupId>
+                <artifactId>IGHS-algorithm</artifactId>
                 <version>${ruoyi.version}</version>
             </dependency>
 
@@ -217,6 +238,12 @@
         <module>ruoyi-generator</module>
         <module>ruoyi-common</module>
         <module>IGHS-device</module>
+        <module>ruoyi-knowledge</module>
+        <module>ruoyi-programming</module>
+        <module>ruoyi-algorithm</module>
+        <module>IGHS-knowledge</module>
+        <module>IGHS-programming</module>
+        <module>IGHS-algorithm</module>
     </modules>
     <packaging>pom</packaging>
 

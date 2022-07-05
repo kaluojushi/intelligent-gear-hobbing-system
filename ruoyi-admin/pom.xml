@@ -61,10 +61,31 @@
             <artifactId>ruoyi-generator</artifactId>
         </dependency>
 
+        <!-- 知识库系统模块-->
+        <dependency>
+            <groupId>com.ruoyi</groupId>
+            <artifactId>IGHS-knowledge</artifactId>
+            <version>${ruoyi.version}</version>
+        </dependency>
+
+        <!-- 自动编程系统模块-->
+        <dependency>
+            <groupId>com.ruoyi</groupId>
+            <artifactId>IGHS-programming</artifactId>
+            <version>${ruoyi.version}</version>
+        </dependency>
+
         <!-- 设备管理系统模块-->
         <dependency>
             <groupId>com.ruoyi</groupId>
             <artifactId>IGHS-device</artifactId>
+            <version>${ruoyi.version}</version>
+        </dependency>
+
+        <!-- 算法管理系统模块-->
+        <dependency>
+            <groupId>com.ruoyi</groupId>
+            <artifactId>IGHS-algorithm</artifactId>
             <version>${ruoyi.version}</version>
         </dependency>
 

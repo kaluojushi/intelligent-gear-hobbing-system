@@ -28,7 +28,7 @@ public class DeviceHob extends BaseEntity
 
     /** 滚刀模数(mm) */
     @Excel(name = "滚刀模数(mm)")
-    private String hobModule;
+    private String hobModulus;
 
     /** 滚刀压力角(°) */
     @Excel(name = "滚刀压力角(°)")
@@ -77,14 +77,14 @@ public class DeviceHob extends BaseEntity
     {
         return hobHeads;
     }
-    public void setHobModule(String hobModule) 
+    public void setHobModulus(String hobModulus)
     {
-        this.hobModule = hobModule;
+        this.hobModulus = hobModulus;
     }
 
-    public String getHobModule() 
+    public String getHobModulus()
     {
-        return hobModule;
+        return hobModulus;
     }
     public void setHobPressureAngle(String hobPressureAngle) 
     {
@@ -138,7 +138,7 @@ public class DeviceHob extends BaseEntity
             .append("id", getId())
             .append("hobName", getHobName())
             .append("hobHeads", getHobHeads())
-            .append("hobModule", getHobModule())
+            .append("hobModulus", getHobModulus())
             .append("hobPressureAngle", getHobPressureAngle())
             .append("hobSpiralAngle", getHobSpiralAngle())
             .append("hobLength", getHobLength())

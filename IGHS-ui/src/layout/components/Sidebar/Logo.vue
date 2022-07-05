@@ -37,6 +37,7 @@ export default {
     return {
       title: '智能数控滚齿加工系统',
       // logo: logoImg
+      logo: null
     }
   }
 }

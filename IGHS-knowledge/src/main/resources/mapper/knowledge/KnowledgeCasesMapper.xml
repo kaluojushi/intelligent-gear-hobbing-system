@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.knowledge.mapper.KnowledgeCasesMapper">
+    
+    <resultMap type="KnowledgeCases" id="KnowledgeCasesResult">
+        <result property="id"    column="id"    />
+        <result property="caseName"    column="case_name"    />
+        <result property="caseInfo"    column="case_info"    />
+        <result property="caseCode"    column="case_code"    />
+        <result property="caseProcessTime"    column="case_process_time"    />
+        <result property="caseEntryTime"    column="case_entry_time"    />
+        <result property="notes"    column="notes"    />
+    </resultMap>
+
+    <sql id="selectKnowledgeCasesVo">
+        select id, case_name, case_info, case_code, case_process_time, case_entry_time, notes from knowledge_cases
+    </sql>
+
+    <select id="selectKnowledgeCasesList" parameterType="KnowledgeCases" resultMap="KnowledgeCasesResult">
+        <include refid="selectKnowledgeCasesVo"/>
+        <where>  
+            <if test="caseName != null  and caseName != ''"> and case_name like concat('%', #{caseName}, '%')</if>
+            <if test="caseInfo != null  and caseInfo != ''"> and case_info = #{caseInfo}</if>
+            <if test="caseCode != null  and caseCode != ''"> and case_code = #{caseCode}</if>
+            <if test="caseProcessTime != null "> and case_process_time &gt;= #{caseProcessTime} and case_process_time &lt; #{caseProcessTimeLimit}</if>
+            <if test="caseEntryTime != null "> and case_entry_time &gt;= #{caseEntryTime} and case_entry_time &lt; #{caseEntryTimeLimit}</if>
+            <if test="notes != null  and notes != ''"> and notes = #{notes}</if>
+        </where>
+    </select>
+    
+    <select id="selectKnowledgeCasesById" parameterType="Long" resultMap="KnowledgeCasesResult">
+        <include refid="selectKnowledgeCasesVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertKnowledgeCases" parameterType="KnowledgeCases" useGeneratedKeys="true" keyProperty="id">
+        insert into knowledge_cases
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="caseName != null">case_name,</if>
+            <if test="caseInfo != null">case_info,</if>
+            <if test="caseCode != null">case_code,</if>
+            <if test="caseProcessTime != null">case_process_time,</if>
+            <if test="caseEntryTime != null">case_entry_time,</if>
+            <if test="notes != null">notes,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="caseName != null">#{caseName},</if>
+            <if test="caseInfo != null">#{caseInfo},</if>
+            <if test="caseCode != null">#{caseCode},</if>
+            <if test="caseProcessTime != null">#{caseProcessTime},</if>
+            <if test="caseEntryTime != null">#{caseEntryTime},</if>
+            <if test="notes != null">#{notes},</if>
+         </trim>
+    </insert>
+
+    <update id="updateKnowledgeCases" parameterType="KnowledgeCases">
+        update knowledge_cases
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="caseName != null">case_name = #{caseName},</if>
+            <if test="caseInfo != null">case_info = #{caseInfo},</if>
+            <if test="caseCode != null">case_code = #{caseCode},</if>
+            <if test="caseProcessTime != null">case_process_time = #{caseProcessTime},</if>
+            <if test="caseEntryTime != null">case_entry_time = #{caseEntryTime},</if>
+            <if test="notes != null">notes = #{notes},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteKnowledgeCasesById" parameterType="Long">
+        delete from knowledge_cases where id = #{id}
+    </delete>
+
+    <delete id="deleteKnowledgeCasesByIds" parameterType="String">
+        delete from knowledge_cases where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

@@ -6,72 +6,323 @@
           <div slot="header" class="card-title">
             新代码生成
           </div>
-          <el-form ref="form" :model="form" label-width="95px" :inline="true">
-            <div class="form-subtitle">
-              齿轮类型选择
-            </div>
-            <el-form-item label="齿轮类型">
-              <el-cascader
-                v-model="form.gearType"
-                :options="gearTypeOptions"
-                :props="{expandTrigger: 'hover'}"
-                :show-all-levels="false"
-              ></el-cascader>
-            </el-form-item>
-            <div class="form-subtitle">
-              齿轮数据
-            </div>
-            <el-form-item label="齿轮齿数">
-              <el-input v-model="form.gearTeeth"></el-input>
-            </el-form-item>
-            <el-form-item label="齿轮模数">
-              <el-input v-model="form.gearModulu">
-                <template slot="append">
-                  mm
-                </template>
-              </el-input>
-            </el-form-item>
-            <el-form-item label="压力角">
-              <el-input v-model="form.pressureAngle">
-                <template slot="append">
-                  °
-                </template>
-              </el-input>
-            </el-form-item>
-            <el-form-item label="齿顶高系数">
-              <el-input v-model="form.ha"></el-input>
-            </el-form-item>
-            <el-form-item label="顶隙系数">
-              <el-input v-model="form.c"></el-input>
-            </el-form-item>
-            <el-form-item label="齿宽">
-              <el-input v-model="form.b">
-                <template slot="append">
-                  mm
-                </template>
-              </el-input>
-            </el-form-item>
-            <el-form-item label="外径">
-              <el-input v-model="form.da">
-                <template slot="append">
-                  mm
-                </template>
-              </el-input>
-            </el-form-item>
-            <div class="form-subtitle">
-              加工设备选择
-            </div>
-            <el-form-item label="机床">
-              <el-select></el-select>
-            </el-form-item>
-            <el-form-item label="滚刀">
-              <el-select></el-select>
-            </el-form-item>
-            <div style="margin-bottom: 15px;"></div>
+          <el-tabs v-model="activeName">
+            <el-tab-pane label="齿轮与齿形" name="shape">
+              <div class="form-subtitle" style="margin-top: 10px">
+                齿轮类型选择
+              </div>
+              <el-form ref="form_gearType" :model="form">
+                <el-row>
+                  <el-col :span="12">
+                    <el-form-item>
+                      <el-cascader
+                        v-model="form.gearType"
+                        :options="gearTypeOptions"
+                        :props="{expandTrigger: 'hover'}"
+                        :show-all-levels="false"
+                        placeholder="请选择齿轮类型"
+                      ></el-cascader>
+                    </el-form-item>
+                  </el-col>
+                </el-row>
+              </el-form>
+
+              <div class="form-subtitle">
+                齿轮数据
+              </div>
+              <el-form ref="form_gearBasic" :model="form" label-width="85px">
+                <el-row :gutter="10">
+                  <el-col v-for="item in gearBasicItems" :span="item.col">
+                    <el-form-item :label="item.label">
+                      <el-col :span="20">
+                        <el-input v-if="item.type === 'input'" v-model="form[item.attr]"
+                                  :placeholder="'请输入' + item.label"></el-input>
+                      </el-col>
+                      <el-col :span="4" class="item-unit" style="padding-left: 2px">
+                        {{ item.unit }}
+                      </el-col>
+                    </el-form-item>
+                  </el-col>
+                </el-row>
+              </el-form>
+
+              <div class="form-subtitle">
+                齿形数据
+              </div>
+              <div v-if="!form.gearType" class="card-note">
+                请先选择齿轮类型
+              </div>
+              <el-form ref="form_gearShape" :model="form" label-width="75px"
+                       v-else-if="['oblique', 'bevel', 'drum'].includes(form.gearType[1])">
+                <el-row :gutter="10">
+                  <el-col v-for="item in gearShapeItems" v-if="item.gearType === form.gearType[1]" :span="item.col">
+                    <el-form-item :label="item.label">
+                      <el-col :span="20">
+                        <el-input v-if="item.type === 'input'" v-model="form[item.attr]"
+                                  :placeholder="'请输入' + item.label"></el-input>
+                        <el-select v-else-if="item.type === 'select'" v-model="form[item.attr]"
+                                   :placeholder="'请选择' + item.label">
+                          <el-option
+                            v-for="it in item.options"
+                            :key="it.value"
+                            :label="it.label"
+                            :value="it.value">
+                          </el-option>
+                        </el-select>
+                      </el-col>
+                      <el-col :span="4" class="item-unit" style="padding-left: 2px">
+                        {{ item.unit }}
+                      </el-col>
+                    </el-form-item>
+                  </el-col>
+                </el-row>
+              </el-form>
+              <div v-else class="card-note">
+                {{ gearTypes[form.gearType[1]] }}不需要设置齿形数据
+              </div>
+            </el-tab-pane>
+
+            <el-tab-pane label="设备与安装" name="device">
+              <div class="form-subtitle">
+                加工设备选择
+              </div>
+              <el-form ref="form_device" :model="form" label-width="65px">
+                <el-row :gutter="10">
+                  <el-col :span="12">
+                    <el-form-item label="机床">
+                      <el-select
+                        v-model="form.machineId"
+                        filterable
+                        @change="machineChange"
+                        placeholder="请选择或搜索机床名称">
+                        <el-option
+                          v-for="machine in machineList"
+                          :key="machine.id"
+                          :label="machine.machineName"
+                          :value="machine.id">
+                        </el-option>
+                      </el-select>
+                    </el-form-item>
+                  </el-col>
+                  <el-col :span="12">
+                    <el-form-item label="滚刀">
+                      <el-select
+                        v-model="form.hobId"
+                        filterable
+                        @change="hobChange"
+                        placeholder="请选择或搜索滚刀名称">
+                        <el-option
+                          v-for="hob in hobList"
+                          :key="hob.id"
+                          :label="hob.hobName"
+                          :value="hob.id">
+                        </el-option>
+                      </el-select>
+                    </el-form-item>
+                  </el-col>
+                </el-row>
+                <el-descriptions direction="vertical" :column="8" border style="margin-bottom: 25px">
+                  <el-descriptions-item label="机床型号" :span="2" :label-style="textAlign" :content-style="textAlign">
+                    {{ currentMachine ? currentMachine.machineName : "/" }}
+                  </el-descriptions-item>
+                  <el-descriptions-item label="机床描述" :span="2" :label-style="textAlign" :content-style="textAlign">
+                    {{ currentMachine ? currentMachine.machineDescribe : "/" }}
+                  </el-descriptions-item>
+                  <el-descriptions-item label="最大工件外径" :span="1" :label-style="textAlign" :content-style="textAlign">
+                    {{ currentMachine ? currentMachine.maxWorkpieceDiameter + "mm" : "/" }}
+                  </el-descriptions-item>
+                  <el-descriptions-item label="最大工件外径" :span="1" :label-style="textAlign" :content-style="textAlign">
+                    {{ currentMachine ? currentMachine.maxWorkpieceModulus + "mm" : "/" }}
+                  </el-descriptions-item>
+                  <el-descriptions-item label="数控系统名称" :span="2" :label-style="textAlign" :content-style="textAlign">
+                    {{ currentCnc ? currentCnc.cncName : "/" }}
+                  </el-descriptions-item>
+                  <el-descriptions-item label="滚刀名称" :span="2" :label-style="textAlign" :content-style="textAlign">
+                    {{ currentHob ? currentHob.hobName : "/" }}
+                  </el-descriptions-item>
+                  <el-descriptions-item label="滚刀头数" :label-style="textAlign" :content-style="textAlign">
+                    {{ currentHob ? currentHob.hobHeads : "/" }}
+                  </el-descriptions-item>
+                  <el-descriptions-item label="滚刀模数" :label-style="textAlign" :content-style="textAlign">
+                    {{ currentHob ? currentHob.hobModulus + "mm" : "/" }}
+                  </el-descriptions-item>
+                  <el-descriptions-item label="滚刀压力角" :label-style="textAlign" :content-style="textAlign">
+                    {{ currentHob ? currentHob.hobPressureAngle + "°" : "/" }}
+                  </el-descriptions-item>
+                  <el-descriptions-item label="滚刀螺旋升角" :label-style="textAlign" :content-style="textAlign">
+                    {{ currentHob ? currentHob.hobSpiralAngle + "°" : "/" }}
+                  </el-descriptions-item>
+                  <el-descriptions-item label="滚刀长度" :label-style="textAlign" :content-style="textAlign">
+                    {{ currentHob ? currentHob.hobLength + "mm" : "/" }}
+                  </el-descriptions-item>
+                  <el-descriptions-item label="滚刀外径" :label-style="textAlign" :content-style="textAlign">
+                    {{ currentHob ? currentHob.hobOuterDiameter + "mm" : "/" }}
+                  </el-descriptions-item>
+                </el-descriptions>
+              </el-form>
+
+              <div class="form-subtitle">
+                安装参数
+              </div>
+              <el-form ref="form_mounting" :model="form" label-width="100px">
+                <el-row :gutter="10">
+                  <el-col v-for="item in mountingItems" :span="item.col">
+                    <el-form-item :label="item.label" v-if="item.label">
+                      <el-row v-if="item.type === 'input'">
+                        <el-col :span="20">
+                          <el-input v-model="form[item.attr]"
+                                    :placeholder="'请输入' + item.label"></el-input>
+                        </el-col>
+                        <el-col :span="4" class="item-unit" style="padding-left: 2px">
+                          {{ item.unit }}
+                        </el-col>
+                      </el-row>
+                      <el-row v-else-if="item.type === 'array'" :gutter="5">
+                        <el-col :span="7" v-for="i in 3">
+                          <el-col :span="20">
+                            <el-input v-model="form[item.attr][i - 1]"
+                                      :placeholder="'请输入坐标' + ['X', 'Y', 'Z'][i - 1]" size="small"></el-input>
+                          </el-col>
+                          <el-col :span="4" class="item-unit" style="padding-left: 2px">
+                            {{ item.unit }}
+                          </el-col>
+                        </el-col>
+                      </el-row>
+                    </el-form-item>
+                  </el-col>
+                </el-row>
+              </el-form>
+            </el-tab-pane>
+
+            <el-tab-pane label="切削与进给" name="process">
+              <div class="form-subtitle">
+                切削参数
+              </div>
+              <el-form ref="form_cutting" :model="form" label-width="100px">
+                <el-row :gutter="10">
+                  <el-col v-for="item in cuttingItems" :span="item.col">
+                    <el-form-item :label="item.label">
+                      <el-col :span="20">
+                        <el-input v-if="item.type === 'input'" v-model="form[item.attr]"
+                                  :placeholder="'请输入' + item.label"></el-input>
+                        <el-select v-else-if="item.type === 'select'" v-model="form[item.attr]"
+                                   :placeholder="'请选择' + item.label">
+                          <el-option
+                            v-for="it in item.options"
+                            :key="it.value"
+                            :label="it.label"
+                            :value="it.value">
+                          </el-option>
+                        </el-select>
+                      </el-col>
+                      <el-col :span="4" class="item-unit" style="padding-left: 2px">
+                        {{ item.unit }}
+                      </el-col>
+                    </el-form-item>
+                  </el-col>
+                </el-row>
+              </el-form>
+
+              <div class="form-subtitle">
+                进给参数
+              </div>
+              <el-form ref="form_feed" :model="form" label-width="125px">
+                <el-row :gutter="10">
+                  <el-col v-for="item in feedItems" :span="item.col">
+                    <el-form-item :label="item.label">
+                      <el-col :span="20">
+                        <el-input v-if="item.type === 'input'" v-model="form[item.attr]"
+                                  :placeholder="'请输入' + item.label"></el-input>
+                        <el-select v-else-if="item.type === 'select'" v-model="form[item.attr]"
+                                   :placeholder="'请选择' + item.label">
+                          <el-option
+                            v-for="it in item.options"
+                            :key="it.value"
+                            :label="it.label"
+                            :value="it.value">
+                          </el-option>
+                        </el-select>
+                      </el-col>
+                      <el-col :span="4" class="item-unit" style="padding-left: 2px">
+                        {{ item.unit }}
+                      </el-col>
+                    </el-form-item>
+                  </el-col>
+                </el-row>
+              </el-form>
+
+              <div class="form-subtitle">
+                窜刀设置
+              </div>
+              <el-form ref="form_fleeCutter" :model="form" label-width="100px">
+                <el-row :gutter="10">
+                  <el-col v-for="item in fleeCutterItems" :span="item.col">
+                    <el-form-item :label="item.label">
+                      <el-col :span="20">
+                        <el-input v-if="item.type === 'input'" v-model="form[item.attr]"
+                                  :placeholder="'请输入' + item.label"></el-input>
+                        <el-select v-else-if="item.type === 'select'" v-model="form[item.attr]"
+                                   :placeholder="'请选择' + item.label">
+                          <el-option
+                            v-for="it in item.options"
+                            :key="it.value"
+                            :label="it.label"
+                            :value="it.value">
+                          </el-option>
+                        </el-select>
+                        <el-radio-group v-else-if="item.type === 'radio'" v-model="form[item.attr]">
+                          <el-radio :label="1">是</el-radio>
+                          <el-radio :label="0">否</el-radio>
+                        </el-radio-group>
+                      </el-col>
+                      <el-col :span="4" class="item-unit" style="padding-left: 2px">
+                        {{ item.unit }}
+                      </el-col>
+                    </el-form-item>
+                  </el-col>
+                </el-row>
+              </el-form>
+
+              <div class="form-subtitle">
+                其他设置
+              </div>
+              <el-form ref="form_other" :model="form" label-width="100px">
+                <el-row :gutter="10">
+                  <el-col v-for="item in otherItems" :span="item.col">
+                    <el-form-item :label="item.label">
+                      <el-col :span="20">
+                        <el-input v-if="item.type === 'input'" v-model="form[item.attr]"
+                                  :placeholder="'请输入' + item.label"></el-input>
+                        <el-select v-else-if="item.type === 'select'" v-model="form[item.attr]"
+                                   :placeholder="'请选择' + item.label">
+                          <el-option
+                            v-for="it in item.options"
+                            :key="it.value"
+                            :label="it.label"
+                            :value="it.value">
+                          </el-option>
+                        </el-select>
+                        <el-radio-group v-else-if="item.type === 'radio'" v-model="form[item.attr]">
+                          <el-radio :label="1">是</el-radio>
+                          <el-radio :label="0">否</el-radio>
+                        </el-radio-group>
+                      </el-col>
+                      <el-col :span="4" class="item-unit" style="padding-left: 2px">
+                        {{ item.unit }}
+                      </el-col>
+                    </el-form-item>
+                  </el-col>
+                </el-row>
+              </el-form>
+            </el-tab-pane>
+          </el-tabs>
+
+          <div style="margin-bottom: 15px;"></div>
+          <el-form ref="bottom" label-width="95px" :inline="true">
             <el-form-item>
               <el-button type="primary" @click="">更新模型</el-button>
-              <el-button type="success" @click="">生成代码</el-button>
-              <el-button type="danger">清空</el-button>
+              <el-button type="success" @click="">生成路径</el-button>
+              <el-button type="danger" @click="reset">清空</el-button>
             </el-form-item>
           </el-form>
         </el-card>
@@ -85,53 +336,238 @@
           <el-image :src="require('@/assets/images/gear.png')"></el-image>
         </el-card>
       </el-col>
+
+      <el-col :span="12">
+        <el-card>
+          <div slot="header" class="card-title">
+            加工路径
+          </div>
+          <el-row>
+            <el-col :span="8">
+              <el-image :src="require('@/assets/images/one_up_milling.png')"></el-image>
+            </el-col>
+            <el-col :span="16">
+              <el-form label-position="left" class="demo-table-expand" label-width="115px">
+                <el-form-item label="起始坐标">
+                  <span>[ 80, 400 ]</span>
+                </el-form-item>
+                <el-form-item label="加工准备坐标">
+                  <span>[ 56.875, 242.21677930063402 ]</span>
+                </el-form-item>
+                <el-form-item label="加工起始坐标A">
+                  <span>[ 41.875, 242.21677930063402 ]</span>
+                </el-form-item>
+                <el-form-item label="加工结束坐标B">
+                  <span>[ 41.875, 192.21677930063402 ],</span>
+                </el-form-item>
+                <el-form-item label="加工退出坐标">
+                  <span>[ 61.875, 192.21677930063402 ],</span>
+                </el-form-item>
+                <el-form-item label="终点坐标">
+                  <span>[ 80, 400 ]</span>
+                </el-form-item>
+              </el-form>
+            </el-col>
+          </el-row>
+          <el-form ref="bottom" label-width="95px" :inline="true">
+            <el-form-item>
+              <el-button type="success" @click="">生成代码</el-button>
+              <el-button type="danger">返回</el-button>
+            </el-form-item>
+          </el-form>
+        </el-card>
+      </el-col>
     </el-row>
   </div>
 </template>
 
 <script>
+import {listMachine} from "@/api/device/machine";
+import {listHob} from "@/api/device/hob";
+import {listPath} from "@/api/algorithm/path";
+import {listCnc} from "@/api/algorithm/cnc";
+
 export default {
   name: "New",
   data() {
     return {
-      form:{},
+      // 标签卡激活内容
+      activeName: "shape",
+      // 表单
+      form: {
+        hobInitialPoint: [null, null, null],
+        safeDistance: [null, null, null],
+      },
+      // 齿轮类型选项
       gearTypeOptions: [{
-        value: "圆柱齿轮",
+        value: "cylinder",
         label: "圆柱齿轮",
         children: [{
-          value: "直齿圆柱齿轮",
+          value: "straight",
           label: "直齿圆柱齿轮"
         }, {
-          value: "斜齿圆柱齿轮",
+          value: "oblique",
           label: "斜齿圆柱齿轮"
         }]
       }, {
-        value: "轴向异型齿轮",
+        value: "abnormal",
         label: "轴向异型齿轮",
         children: [{
-          value: "小锥度齿轮",
+          value: "bevel",
           label: "小锥度齿轮"
         }, {
-          value: "鼓形齿轮",
+          value: "drum",
           label: "鼓形齿轮"
         }]
       }, {
-        value: "其他",
+        value: "others",
         label: "其他",
         children: [{
-          value: "花键",
+          value: "spline",
           label: "花键"
         }, {
-          value: "蜗轮",
+          value: "worm",
           label: "蜗轮"
         }]
-      }]
+      }],
+      // 齿轮类型表
+      gearTypes: {
+        straight: "直齿圆柱齿轮",
+        oblique: "斜齿圆柱齿轮",
+        bevel: "小锥度齿轮",
+        drum: "鼓形齿轮",
+        spline: "花键",
+        worm: "蜗轮"
+      },
+      // 机床、滚刀、路径、数控列表
+      machineList: [],
+      hobList: [],
+      pathList: [],
+      cncList: [],
+      // 当前对象
+      currentMachine: null,
+      currentHob: null,
+      currentPath: null,
+      currentCnc: null,
+      // 居中对象
+      textAlign: {"text-align": "center"},
+      // 齿轮参数项
+      gearBasicItems: [
+        {label: "齿轮齿数", attr: "gearTeeth", unit: "", type: "input", col: 12},
+        {label: "齿轮模数", attr: "gearModulus", unit: "mm", type: "input", col: 12},
+        {label: "压力角", attr: "gearPressureAngle", unit: "°", type: "input", col: 12},
+        {label: "变位系数", attr: "gearModificationCoefficient", unit: "", type: "input", col: 12},
+        {label: "齿顶高系数", attr: "gearAddendumCoefficient", unit: "", type: "input", col: 12},
+        {label: "顶隙系数", attr: "gearClearanceCoefficient", unit: "", type: "input", col: 12},
+        {label: "齿宽", attr: "gearBreadth", unit: "mm", type: "input", col: 12},
+        {label: "外径", attr: "gearOuterDiameter", unit: "mm", type: "input", col: 12},
+      ],
+      gearShapeItems: [
+        {label: "螺旋角", attr: "gearHelixAngle", unit: "°", type: "input", col: 12, gearType: 'oblique'},
+        {
+          label: "旋向",
+          attr: "gearHelixDirection",
+          unit: "",
+          type: "select",
+          options: [{value: "right", label: "右旋"}, {value: "left", label: "左旋"},],
+          col: 12,
+          gearType: 'oblique'
+        },
+        {label: "顶锥角", attr: "gearTopConeAngle", unit: "°", type: "input", col: 8, gearType: 'bevel'},
+        {label: "根锥角", attr: "gearRootConeAngle", unit: "°", type: "input", col: 8, gearType: 'bevel'},
+        {label: "锥距", attr: "gearConeDistance", unit: "mm", type: "input", col: 8, gearType: 'bevel'},
+        {label: "鼓形量", attr: "gearDrumShapedSize", unit: "mm", type: "input", col: 8, gearType: 'drum'},
+        {label: "鼓齿外径", attr: "gearDrumOuterDiameter", unit: "mm", type: "input", col: 8, gearType: 'drum'},
+        {label: "中心半径", attr: "gearCenterRadius", unit: "mm", type: "input", col: 8, gearType: 'drum'},
+      ],
+      mountingItems: [
+        {label: "安装角", attr: "mountingAngle", unit: "°", type: "input", col: 12},
+        {col: 12},
+        {label: "滚刀初始坐标", attr: "hobInitialPoint", unit: "mm", type: "array", col: 24},
+        {label: "安全距离", attr: "safeDistance", unit: "mm", type: "array", col: 24},
+      ],
+      cuttingItems: [
+        {label: "切削循环类型", attr: "pathId", unit: "", type: "select", options: [], col: 16},
+        {label: "切削次数", attr: "cuttingFrequency", unit: "次", type: "input", col: 12},
+        {label: "吃刀深度", attr: "cuttingDepth", unit: "mm", type: "input", col: 12},
+        {label: "滚刀转速", attr: "hobRotationSpeed", unit: "r/min", type: "input", col: 12},
+        {
+          label: "滚刀旋转方向",
+          attr: "hobRotationDirection",
+          unit: "",
+          type: "select",
+          options: [{value: "right", label: "右旋"}, {value: "left", label: "左旋"},],
+          col: 12
+        },
+      ],
+      feedItems: [
+        {label: "进给量", attr: "feedRate", unit: "mm/r", type: "input", col: 12},
+        {
+          label: "轴向进给方向",
+          attr: "axialFeedDirection",
+          unit: "",
+          type: "select",
+          options: [{value: "plus", label: "正向"}, {value: "minus", label: "负向"},],
+          col: 12
+        },
+        {label: "径向快速进给速度", attr: "radialRapidFeedSpeed", unit: "mm/min", type: "input", col: 12},
+        {label: "移动后暂停时间", attr: "pauseTimeAfterMove", unit: "s", type: "input", col: 12},
+      ],
+      fleeCutterItems: [
+        {label: "切削后窜刀", attr: "isFleeCutter", unit: "", type: "radio", default: 1, col: 16},
+        {label: "窜刀量", attr: "fleeCutterAmounts", unit: "mm", type: "input", col: 12},
+        {label: "窜刀齿轮数", attr: "fleeCutterGears", unit: "", type: "input", col: 12}
+      ],
+      otherItems: [
+        {label: "是否外支架", attr: "hasOuterSupport", unit: "", type: "radio", default: 1, col: 12},
+        {label: "是否夹具", attr: "hasFixture", unit: "", type: "radio", default: 1, col: 12},
+        {label: "是否冷却液", attr: "hasCoolant", unit: "", type: "radio", default: 1, col: 12},
+        {label: "是否同步取消", attr: "isSyncCanceled", unit: "", type: "radio", default: 1, col: 12},
+      ]
     }
   },
   created() {
+    this.getContextList();
   },
   methods: {
-
+    /** 机床、滚刀、路径、数控列表 */
+    getContextList() {
+      listMachine().then(response => {
+        this.machineList = response.rows;
+      });
+      listHob().then(response => {
+        this.hobList = response.rows;
+      });
+      listPath().then(response => {
+        this.pathList = response.rows;
+        this.cuttingItems[0].options = this.pathList.map(i => {[i.value, i.label] = [i.id, i.pathName]; return i;});
+      });
+      listCnc().then(response => {
+        this.cncList = response.rows;
+      })
+    },
+    /** 清空按钮 */
+    reset() {
+      this.form = {
+        hobInitialPoint: [null, null, null],
+        safeDistance: [null, null, null],
+      };
+      this.currentMachine = null;
+      this.currentHob = null;
+      this.currentPath = null;
+      this.currentCnc = null;
+    },
+    /** 选择齿轮设备 */
+    machineChange() {
+      this.currentMachine = this.machineList.find(machine => machine.id === this.form.machineId);
+      this.currentCnc = this.cncList.find(cnc => cnc.id === this.currentMachine.cncId);
+    },
+    hobChange() {
+      this.currentHob = this.hobList.find(hob => hob.id === this.form.hobId);
+    },
+    pathChange() {
+      this.currentPath = this.pathList.find(path => path.id === this.form.pathId);
+    }
   }
 }
 </script>
@@ -142,8 +578,19 @@ export default {
 }
 
 .form-subtitle {
-  font:18px bold;
-  margin-top: 10px;
-  margin-bottom: 15px;
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.item-unit {
+  font-size: 14px;
+  color: #606266;
+  font-weight: 700;
+}
+
+.card-note {
+  margin-left: 10px;
+  margin-bottom: 10px;
 }
 </style>

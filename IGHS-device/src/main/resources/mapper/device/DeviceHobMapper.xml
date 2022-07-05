@@ -8,7 +8,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="id"    column="id"    />
         <result property="hobName"    column="hob_name"    />
         <result property="hobHeads"    column="hob_heads"    />
-        <result property="hobModule"    column="hob_module"    />
+        <result property="hobModulus"    column="hob_modulus"    />
         <result property="hobPressureAngle"    column="hob_pressure_angle"    />
         <result property="hobSpiralAngle"    column="hob_spiral_angle"    />
         <result property="hobLength"    column="hob_length"    />
@@ -17,7 +17,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectDeviceHobVo">
-        select id, hob_name, hob_heads, hob_module, hob_pressure_angle, hob_spiral_angle, hob_length, hob_outer_diameter, notes from device_hob
+        select id, hob_name, hob_heads, hob_modulus, hob_pressure_angle, hob_spiral_angle, hob_length, hob_outer_diameter, notes from device_hob
     </sql>
 
     <select id="selectDeviceHobList" parameterType="DeviceHob" resultMap="DeviceHobResult">
@@ -25,7 +25,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <where>  
             <if test="hobName != null  and hobName != ''"> and hob_name like concat('%', #{hobName}, '%')</if>
             <if test="hobHeads != null  and hobHeads != ''"> and hob_heads = #{hobHeads}</if>
-            <if test="hobModule != null  and hobModule != ''"> and hob_module = #{hobModule}</if>
+            <if test="hobModulus != null  and hobModulus != ''"> and hob_modulus = #{hobModulus}</if>
         </where>
     </select>
     
@@ -39,7 +39,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="hobName != null">hob_name,</if>
             <if test="hobHeads != null">hob_heads,</if>
-            <if test="hobModule != null">hob_module,</if>
+            <if test="hobModulus != null">hob_modulus,</if>
             <if test="hobPressureAngle != null">hob_pressure_angle,</if>
             <if test="hobSpiralAngle != null">hob_spiral_angle,</if>
             <if test="hobLength != null">hob_length,</if>
@@ -49,7 +49,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="hobName != null">#{hobName},</if>
             <if test="hobHeads != null">#{hobHeads},</if>
-            <if test="hobModule != null">#{hobModule},</if>
+            <if test="hobModulus != null">#{hobModulus},</if>
             <if test="hobPressureAngle != null">#{hobPressureAngle},</if>
             <if test="hobSpiralAngle != null">#{hobSpiralAngle},</if>
             <if test="hobLength != null">#{hobLength},</if>
@@ -63,7 +63,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <trim prefix="SET" suffixOverrides=",">
             <if test="hobName != null">hob_name = #{hobName},</if>
             <if test="hobHeads != null">hob_heads = #{hobHeads},</if>
-            <if test="hobModule != null">hob_module = #{hobModule},</if>
+            <if test="hobModulus != null">hob_modulus = #{hobModulus},</if>
             <if test="hobPressureAngle != null">hob_pressure_angle = #{hobPressureAngle},</if>
             <if test="hobSpiralAngle != null">hob_spiral_angle = #{hobSpiralAngle},</if>
             <if test="hobLength != null">hob_length = #{hobLength},</if>

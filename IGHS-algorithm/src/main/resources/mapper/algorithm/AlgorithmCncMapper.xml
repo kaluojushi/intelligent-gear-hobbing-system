@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.algorithm.mapper.AlgorithmCncMapper">
+    
+    <resultMap type="AlgorithmCnc" id="AlgorithmCncResult">
+        <result property="id"    column="id"    />
+        <result property="cncName"    column="cnc_name"    />
+        <result property="cncParam"    column="cnc_param"    />
+        <result property="notes"    column="notes"    />
+    </resultMap>
+
+    <sql id="selectAlgorithmCncVo">
+        select id, cnc_name, cnc_param, notes from algorithm_cnc
+    </sql>
+
+    <select id="selectAlgorithmCncList" parameterType="AlgorithmCnc" resultMap="AlgorithmCncResult">
+        <include refid="selectAlgorithmCncVo"/>
+        <where>  
+            <if test="cncName != null  and cncName != ''"> and cnc_name like concat('%', #{cncName}, '%')</if>
+            <if test="cncParam != null  and cncParam != ''"> and cnc_param = #{cncParam}</if>
+            <if test="notes != null  and notes != ''"> and notes = #{notes}</if>
+        </where>
+    </select>
+    
+    <select id="selectAlgorithmCncById" parameterType="Long" resultMap="AlgorithmCncResult">
+        <include refid="selectAlgorithmCncVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertAlgorithmCnc" parameterType="AlgorithmCnc" useGeneratedKeys="true" keyProperty="id">
+        insert into algorithm_cnc
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="cncName != null">cnc_name,</if>
+            <if test="cncParam != null">cnc_param,</if>
+            <if test="notes != null">notes,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="cncName != null">#{cncName},</if>
+            <if test="cncParam != null">#{cncParam},</if>
+            <if test="notes != null">#{notes},</if>
+         </trim>
+    </insert>
+
+    <update id="updateAlgorithmCnc" parameterType="AlgorithmCnc">
+        update algorithm_cnc
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="cncName != null">cnc_name = #{cncName},</if>
+            <if test="cncParam != null">cnc_param = #{cncParam},</if>
+            <if test="notes != null">notes = #{notes},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteAlgorithmCncById" parameterType="Long">
+        delete from algorithm_cnc where id = #{id}
+    </delete>
+
+    <delete id="deleteAlgorithmCncByIds" parameterType="String">
+        delete from algorithm_cnc where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

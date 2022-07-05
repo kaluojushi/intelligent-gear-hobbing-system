@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.knowledge.mapper.KnowledgeStandardMapper">
+    
+    <resultMap type="KnowledgeStandard" id="KnowledgeStandardResult">
+        <result property="id"    column="id"    />
+        <result property="standardName"    column="standard_name"    />
+        <result property="standardParam"    column="standard_param"    />
+        <result property="standardUnit"    column="standard_unit"    />
+        <result property="standardValue"    column="standard_value"    />
+        <result property="standardRecommend"    column="standard_recommend"    />
+        <result property="standardOther"    column="standard_other"    />
+        <result property="notes"    column="notes"    />
+    </resultMap>
+
+    <sql id="selectKnowledgeStandardVo">
+        select id, standard_name, standard_param, standard_unit, standard_value, standard_recommend, standard_other, notes from knowledge_standard
+    </sql>
+
+    <select id="selectKnowledgeStandardList" parameterType="KnowledgeStandard" resultMap="KnowledgeStandardResult">
+        <include refid="selectKnowledgeStandardVo"/>
+        <where>  
+            <if test="standardName != null  and standardName != ''"> and standard_name like concat('%', #{standardName}, '%')</if>
+            <if test="standardParam != null  and standardParam != ''"> and standard_param = #{standardParam}</if>
+            <if test="standardUnit != null  and standardUnit != ''"> and standard_unit = #{standardUnit}</if>
+            <if test="standardValue != null  and standardValue != ''"> and standard_value = #{standardValue}</if>
+            <if test="standardRecommend != null  and standardRecommend != ''"> and standard_recommend = #{standardRecommend}</if>
+            <if test="standardOther != null  and standardOther != ''"> and standard_other = #{standardOther}</if>
+            <if test="notes != null  and notes != ''"> and notes = #{notes}</if>
+        </where>
+    </select>
+    
+    <select id="selectKnowledgeStandardById" parameterType="Long" resultMap="KnowledgeStandardResult">
+        <include refid="selectKnowledgeStandardVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertKnowledgeStandard" parameterType="KnowledgeStandard" useGeneratedKeys="true" keyProperty="id">
+        insert into knowledge_standard
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="standardName != null">standard_name,</if>
+            <if test="standardParam != null">standard_param,</if>
+            <if test="standardUnit != null">standard_unit,</if>
+            <if test="standardValue != null">standard_value,</if>
+            <if test="standardRecommend != null">standard_recommend,</if>
+            <if test="standardOther != null">standard_other,</if>
+            <if test="notes != null">notes,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="standardName != null">#{standardName},</if>
+            <if test="standardParam != null">#{standardParam},</if>
+            <if test="standardUnit != null">#{standardUnit},</if>
+            <if test="standardValue != null">#{standardValue},</if>
+            <if test="standardRecommend != null">#{standardRecommend},</if>
+            <if test="standardOther != null">#{standardOther},</if>
+            <if test="notes != null">#{notes},</if>
+         </trim>
+    </insert>
+
+    <update id="updateKnowledgeStandard" parameterType="KnowledgeStandard">
+        update knowledge_standard
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="standardName != null">standard_name = #{standardName},</if>
+            <if test="standardParam != null">standard_param = #{standardParam},</if>
+            <if test="standardUnit != null">standard_unit = #{standardUnit},</if>
+            <if test="standardValue != null">standard_value = #{standardValue},</if>
+            <if test="standardRecommend != null">standard_recommend = #{standardRecommend},</if>
+            <if test="standardOther != null">standard_other = #{standardOther},</if>
+            <if test="notes != null">notes = #{notes},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteKnowledgeStandardById" parameterType="Long">
+        delete from knowledge_standard where id = #{id}
+    </delete>
+
+    <delete id="deleteKnowledgeStandardByIds" parameterType="String">
+        delete from knowledge_standard where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

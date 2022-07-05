@@ -1,26 +1,18 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="75px">
-      <el-form-item label="滚刀名称" prop="hobName">
+    <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
+      <el-form-item label="路径名称" prop="pathName">
         <el-input
-          v-model="queryParams.hobName"
-          placeholder="请输入滚刀名称"
+          v-model="queryParams.pathName"
+          placeholder="请输入路径名称"
           clearable
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="滚刀头数" prop="hobHeads">
+      <el-form-item label="路径参数" prop="pathParam">
         <el-input
-          v-model="queryParams.hobHeads"
-          placeholder="请输入滚刀头数"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="滚刀模数" prop="hobModulus">
-        <el-input
-          v-model="queryParams.hobModulus"
-          placeholder="请输入滚刀模数(mm)"
+          v-model="queryParams.pathParam"
+          placeholder="请输入路径参数"
           clearable
           @keyup.enter.native="handleQuery"
         />
@@ -32,16 +24,16 @@
     </el-form>
 
     <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
-        <el-button
-          type="primary"
-          plain
-          icon="el-icon-plus"
-          size="mini"
-          @click="handleAdd"
-          v-hasPermi="['device:hob:add']"
-        >新增</el-button>
-      </el-col>
+<!--      <el-col :span="1.5">-->
+<!--        <el-button-->
+<!--          type="primary"-->
+<!--          plain-->
+<!--          icon="el-icon-plus"-->
+<!--          size="mini"-->
+<!--          @click="handleAdd"-->
+<!--          v-hasPermi="['algorithm:path:add']"-->
+<!--        >新增</el-button>-->
+<!--      </el-col>-->
       <el-col :span="1.5">
         <el-button
           type="success"
@@ -50,7 +42,7 @@
           size="mini"
           :disabled="single"
           @click="handleUpdate"
-          v-hasPermi="['device:hob:edit']"
+          v-hasPermi="['algorithm:path:edit']"
         >修改</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -61,7 +53,7 @@
           size="mini"
           :disabled="multiple"
           @click="handleDelete"
-          v-hasPermi="['device:hob:remove']"
+          v-hasPermi="['algorithm:path:remove']"
         >删除</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -71,22 +63,18 @@
           icon="el-icon-download"
           size="mini"
           @click="handleExport"
-          v-hasPermi="['device:hob:export']"
+          v-hasPermi="['algorithm:path:export']"
         >导出</el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
-    <el-table v-loading="loading" :data="hobList" @selection-change="handleSelectionChange">
+    <el-table v-loading="loading" :data="pathList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
+<!--      <el-table-column label="主键id" align="center" prop="id" />-->
       <el-table-column label="序号" align="center" type="index" :index="indexMethod"/>
-      <el-table-column label="滚刀名称" align="center" prop="hobName" />
-      <el-table-column label="滚刀头数" align="center" prop="hobHeads" />
-      <el-table-column label="滚刀模数(mm)" align="center" prop="hobModulus" />
-      <el-table-column label="滚刀压力角(°)" align="center" prop="hobPressureAngle" />
-      <el-table-column label="滚刀螺旋升角(°)" align="center" prop="hobSpiralAngle" />
-      <el-table-column label="滚刀长度(mm)" align="center" prop="hobLength" />
-      <el-table-column label="滚刀外径(mm)" align="center" prop="hobOuterDiameter" />
+      <el-table-column label="路径名称" align="center" prop="pathName" />
+      <el-table-column label="路径参数" align="center" prop="pathParam" />
       <el-table-column label="备注" align="center" prop="notes" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
@@ -95,14 +83,14 @@
             type="text"
             icon="el-icon-edit"
             @click="handleUpdate(scope.row)"
-            v-hasPermi="['device:hob:edit']"
+            v-hasPermi="['algorithm:path:edit']"
           >修改</el-button>
           <el-button
             size="mini"
             type="text"
             icon="el-icon-delete"
             @click="handleDelete(scope.row)"
-            v-hasPermi="['device:hob:remove']"
+            v-hasPermi="['algorithm:path:remove']"
           >删除</el-button>
         </template>
       </el-table-column>
@@ -116,29 +104,14 @@
       @pagination="getList"
     />
 
-    <!-- 添加或修改滚刀库对话框 -->
+    <!-- 添加或修改加工路径模块对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="滚刀名称" prop="hobName">
-          <el-input v-model="form.hobName" placeholder="请输入滚刀名称" />
+        <el-form-item label="路径名称" prop="pathName">
+          <el-input v-model="form.pathName" placeholder="请输入路径名称" />
         </el-form-item>
-        <el-form-item label="滚刀头数" prop="hobHeads">
-          <el-input v-model="form.hobHeads" placeholder="请输入滚刀头数" />
-        </el-form-item>
-        <el-form-item label="滚刀模数(mm)" prop="hobModulus">
-          <el-input v-model="form.hobModulus" placeholder="请输入滚刀模数(mm)" />
-        </el-form-item>
-        <el-form-item label="滚刀压力角(°)" prop="hobPressureAngle">
-          <el-input v-model="form.hobPressureAngle" placeholder="请输入滚刀压力角(°)" />
-        </el-form-item>
-        <el-form-item label="滚刀螺旋升角(°)" prop="hobSpiralAngle">
-          <el-input v-model="form.hobSpiralAngle" placeholder="请输入滚刀螺旋升角(°)" />
-        </el-form-item>
-        <el-form-item label="滚刀长度(mm)" prop="hobLength">
-          <el-input v-model="form.hobLength" placeholder="请输入滚刀长度(mm)" />
-        </el-form-item>
-        <el-form-item label="滚刀外径(mm)" prop="hobOuterDiameter">
-          <el-input v-model="form.hobOuterDiameter" placeholder="请输入滚刀外径(mm)" />
+        <el-form-item label="路径参数" prop="pathParam">
+          <el-input v-model="form.pathParam" placeholder="请输入路径参数" />
         </el-form-item>
         <el-form-item label="备注" prop="notes">
           <el-input v-model="form.notes" type="textarea" placeholder="请输入内容" />
@@ -153,10 +126,10 @@
 </template>
 
 <script>
-import { listHob, getHob, delHob, addHob, updateHob } from "@/api/device/hob";
+import { listPath, getPath, delPath, addPath, updatePath } from "@/api/algorithm/path";
 
 export default {
-  name: "Hob",
+  name: "Path",
   data() {
     return {
       // 遮罩层
@@ -171,8 +144,8 @@ export default {
       showSearch: true,
       // 总条数
       total: 0,
-      // 滚刀库表格数据
-      hobList: [],
+      // 加工路径模块表格数据
+      pathList: [],
       // 弹出层标题
       title: "",
       // 是否显示弹出层
@@ -181,9 +154,9 @@ export default {
       queryParams: {
         pageNum: 1,
         pageSize: 10,
-        hobName: null,
-        hobHeads: null,
-        hobModulus: null,
+        pathName: null,
+        pathParam: null,
+        notes: null
       },
       // 表单参数
       form: {},
@@ -199,11 +172,11 @@ export default {
     indexMethod(index) {
       return index + 1;
     },
-    /** 查询滚刀库列表 */
+    /** 查询加工路径模块列表 */
     getList() {
       this.loading = true;
-      listHob(this.queryParams).then(response => {
-        this.hobList = response.rows;
+      listPath(this.queryParams).then(response => {
+        this.pathList = response.rows;
         this.total = response.total;
         this.loading = false;
       });
@@ -217,13 +190,8 @@ export default {
     reset() {
       this.form = {
         id: null,
-        hobName: null,
-        hobHeads: null,
-        hobModulus: null,
-        hobPressureAngle: null,
-        hobSpiralAngle: null,
-        hobLength: null,
-        hobOuterDiameter: null,
+        pathName: null,
+        pathParam: null,
         notes: null
       };
       this.resetForm("form");
@@ -248,16 +216,16 @@ export default {
     handleAdd() {
       this.reset();
       this.open = true;
-      this.title = "添加滚刀库";
+      this.title = "添加加工路径模块";
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
       this.reset();
       const id = row.id || this.ids
-      getHob(id).then(response => {
+      getPath(id).then(response => {
         this.form = response.data;
         this.open = true;
-        this.title = "修改滚刀库";
+        this.title = "修改加工路径模块";
       });
     },
     /** 提交按钮 */
@@ -265,13 +233,13 @@ export default {
       this.$refs["form"].validate(valid => {
         if (valid) {
           if (this.form.id != null) {
-            updateHob(this.form).then(response => {
+            updatePath(this.form).then(response => {
               this.$modal.msgSuccess("修改成功");
               this.open = false;
               this.getList();
             });
           } else {
-            addHob(this.form).then(response => {
+            addPath(this.form).then(response => {
               this.$modal.msgSuccess("新增成功");
               this.open = false;
               this.getList();
@@ -283,8 +251,8 @@ export default {
     /** 删除按钮操作 */
     handleDelete(row) {
       const ids = row.id || this.ids;
-      this.$modal.confirm('是否确认删除滚刀库编号为"' + ids + '"的数据项？').then(function() {
-        return delHob(ids);
+      this.$modal.confirm('是否确认删除加工路径模块编号为"' + ids + '"的数据项？').then(function() {
+        return delPath(ids);
       }).then(() => {
         this.getList();
         this.$modal.msgSuccess("删除成功");
@@ -292,9 +260,9 @@ export default {
     },
     /** 导出按钮操作 */
     handleExport() {
-      this.download('device/hob/export', {
+      this.download('algorithm/path/export', {
         ...this.queryParams
-      }, `hob_${new Date().getTime()}.xlsx`)
+      }, `path_${new Date().getTime()}.xlsx`)
     }
   }
 };
