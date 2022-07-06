@@ -20,6 +20,7 @@
                         :options="gearTypeOptions"
                         :props="{expandTrigger: 'hover'}"
                         :show-all-levels="false"
+                        clearable
                         placeholder="请选择齿轮类型"
                       ></el-cascader>
                     </el-form-item>
@@ -35,8 +36,9 @@
                   <el-col v-for="item in gearBasicItems" :span="item.col">
                     <el-form-item :label="item.label">
                       <el-col :span="20">
-                        <el-input v-if="item.type === 'input'" v-model="form[item.attr]"
-                                  :placeholder="'请输入' + item.label"></el-input>
+                        <el-input v-if="item.type === 'input'" v-model="form[item.prop]"
+                                  :placeholder="'请输入' + item.label"
+                                  @input="onInput($event)" clearable></el-input>
                       </el-col>
                       <el-col :span="4" class="item-unit" style="padding-left: 2px">
                         {{ item.unit }}
@@ -53,14 +55,14 @@
                 请先选择齿轮类型
               </div>
               <el-form ref="form_gearShape" :model="form" label-width="75px"
-                       v-else-if="['oblique', 'bevel', 'drum'].includes(form.gearType[1])">
+                       v-else-if="['helical', 'bevel', 'drum'].includes(form.gearType[1])">
                 <el-row :gutter="10">
                   <el-col v-for="item in gearShapeItems" v-if="item.gearType === form.gearType[1]" :span="item.col">
                     <el-form-item :label="item.label">
                       <el-col :span="20">
-                        <el-input v-if="item.type === 'input'" v-model="form[item.attr]"
+                        <el-input v-if="item.type === 'input'" v-model="form[item.prop]"
                                   :placeholder="'请输入' + item.label"></el-input>
-                        <el-select v-else-if="item.type === 'select'" v-model="form[item.attr]"
+                        <el-select v-else-if="item.type === 'select'" v-model="form[item.prop]"
                                    :placeholder="'请选择' + item.label">
                           <el-option
                             v-for="it in item.options"
@@ -170,7 +172,7 @@
                     <el-form-item :label="item.label" v-if="item.label">
                       <el-row v-if="item.type === 'input'">
                         <el-col :span="20">
-                          <el-input v-model="form[item.attr]"
+                          <el-input v-model="form[item.prop]"
                                     :placeholder="'请输入' + item.label"></el-input>
                         </el-col>
                         <el-col :span="4" class="item-unit" style="padding-left: 2px">
@@ -180,7 +182,7 @@
                       <el-row v-else-if="item.type === 'array'" :gutter="5">
                         <el-col :span="7" v-for="i in 3">
                           <el-col :span="20">
-                            <el-input v-model="form[item.attr][i - 1]"
+                            <el-input v-model="form[item.prop][i - 1]"
                                       :placeholder="'请输入坐标' + ['X', 'Y', 'Z'][i - 1]" size="small"></el-input>
                           </el-col>
                           <el-col :span="4" class="item-unit" style="padding-left: 2px">
@@ -203,9 +205,9 @@
                   <el-col v-for="item in cuttingItems" :span="item.col">
                     <el-form-item :label="item.label">
                       <el-col :span="20">
-                        <el-input v-if="item.type === 'input'" v-model="form[item.attr]"
+                        <el-input v-if="item.type === 'input'" v-model="form[item.prop]"
                                   :placeholder="'请输入' + item.label"></el-input>
-                        <el-select v-else-if="item.type === 'select'" v-model="form[item.attr]"
+                        <el-select v-else-if="item.type === 'select'" v-model="form[item.prop]"
                                    :placeholder="'请选择' + item.label">
                           <el-option
                             v-for="it in item.options"
@@ -231,9 +233,9 @@
                   <el-col v-for="item in feedItems" :span="item.col">
                     <el-form-item :label="item.label">
                       <el-col :span="20">
-                        <el-input v-if="item.type === 'input'" v-model="form[item.attr]"
+                        <el-input v-if="item.type === 'input'" v-model="form[item.prop]"
                                   :placeholder="'请输入' + item.label"></el-input>
-                        <el-select v-else-if="item.type === 'select'" v-model="form[item.attr]"
+                        <el-select v-else-if="item.type === 'select'" v-model="form[item.prop]"
                                    :placeholder="'请选择' + item.label">
                           <el-option
                             v-for="it in item.options"
@@ -259,9 +261,9 @@
                   <el-col v-for="item in fleeCutterItems" :span="item.col">
                     <el-form-item :label="item.label">
                       <el-col :span="20">
-                        <el-input v-if="item.type === 'input'" v-model="form[item.attr]"
+                        <el-input v-if="item.type === 'input'" v-model="form[item.prop]"
                                   :placeholder="'请输入' + item.label"></el-input>
-                        <el-select v-else-if="item.type === 'select'" v-model="form[item.attr]"
+                        <el-select v-else-if="item.type === 'select'" v-model="form[item.prop]"
                                    :placeholder="'请选择' + item.label">
                           <el-option
                             v-for="it in item.options"
@@ -270,7 +272,7 @@
                             :value="it.value">
                           </el-option>
                         </el-select>
-                        <el-radio-group v-else-if="item.type === 'radio'" v-model="form[item.attr]">
+                        <el-radio-group v-else-if="item.type === 'radio'" v-model="form[item.prop]">
                           <el-radio :label="1">是</el-radio>
                           <el-radio :label="0">否</el-radio>
                         </el-radio-group>
@@ -291,9 +293,9 @@
                   <el-col v-for="item in otherItems" :span="item.col">
                     <el-form-item :label="item.label">
                       <el-col :span="20">
-                        <el-input v-if="item.type === 'input'" v-model="form[item.attr]"
+                        <el-input v-if="item.type === 'input'" v-model="form[item.prop]"
                                   :placeholder="'请输入' + item.label"></el-input>
-                        <el-select v-else-if="item.type === 'select'" v-model="form[item.attr]"
+                        <el-select v-else-if="item.type === 'select'" v-model="form[item.prop]"
                                    :placeholder="'请选择' + item.label">
                           <el-option
                             v-for="it in item.options"
@@ -302,7 +304,7 @@
                             :value="it.value">
                           </el-option>
                         </el-select>
-                        <el-radio-group v-else-if="item.type === 'radio'" v-model="form[item.attr]">
+                        <el-radio-group v-else-if="item.type === 'radio'" v-model="form[item.prop]">
                           <el-radio :label="1">是</el-radio>
                           <el-radio :label="0">否</el-radio>
                         </el-radio-group>
@@ -320,7 +322,7 @@
           <div style="margin-bottom: 15px;"></div>
           <el-form ref="bottom" label-width="95px" :inline="true">
             <el-form-item>
-              <el-button type="primary" @click="">更新模型</el-button>
+              <el-button type="primary" @click="handleUpdateSVG">更新模型</el-button>
               <el-button type="success" @click="">生成路径</el-button>
               <el-button type="danger" @click="reset">清空</el-button>
             </el-form-item>
@@ -333,7 +335,8 @@
           <div slot="header" class="card-title">
             SVG模型
           </div>
-          <el-image :src="require('@/assets/images/gear.png')"></el-image>
+<!--          <el-image :src="require('@/assets/images/gear.png')"></el-image>-->
+          <SVGDiv ref="SVGDiv"></SVGDiv>
         </el-card>
       </el-col>
 
@@ -386,9 +389,11 @@ import {listMachine} from "@/api/device/machine";
 import {listHob} from "@/api/device/hob";
 import {listPath} from "@/api/algorithm/path";
 import {listCnc} from "@/api/algorithm/cnc";
+import SVGDiv from "@/components/SVG/SVGDiv";
 
 export default {
   name: "New",
+  components: {SVGDiv},
   data() {
     return {
       // 标签卡激活内容
@@ -403,10 +408,10 @@ export default {
         value: "cylinder",
         label: "圆柱齿轮",
         children: [{
-          value: "straight",
+          value: "spur",
           label: "直齿圆柱齿轮"
         }, {
-          value: "oblique",
+          value: "helical",
           label: "斜齿圆柱齿轮"
         }]
       }, {
@@ -432,8 +437,8 @@ export default {
       }],
       // 齿轮类型表
       gearTypes: {
-        straight: "直齿圆柱齿轮",
-        oblique: "斜齿圆柱齿轮",
+        spur: "直齿圆柱齿轮",
+        helical: "斜齿圆柱齿轮",
         bevel: "小锥度齿轮",
         drum: "鼓形齿轮",
         spline: "花键",
@@ -453,47 +458,47 @@ export default {
       textAlign: {"text-align": "center"},
       // 齿轮参数项
       gearBasicItems: [
-        {label: "齿轮齿数", attr: "gearTeeth", unit: "", type: "input", col: 12},
-        {label: "齿轮模数", attr: "gearModulus", unit: "mm", type: "input", col: 12},
-        {label: "压力角", attr: "gearPressureAngle", unit: "°", type: "input", col: 12},
-        {label: "变位系数", attr: "gearModificationCoefficient", unit: "", type: "input", col: 12},
-        {label: "齿顶高系数", attr: "gearAddendumCoefficient", unit: "", type: "input", col: 12},
-        {label: "顶隙系数", attr: "gearClearanceCoefficient", unit: "", type: "input", col: 12},
-        {label: "齿宽", attr: "gearBreadth", unit: "mm", type: "input", col: 12},
-        {label: "外径", attr: "gearOuterDiameter", unit: "mm", type: "input", col: 12},
+        {label: "齿轮齿数", prop: "gearToothNumber", unit: "", type: "input", default: "18", col: 12},
+        {label: "齿轮模数", prop: "gearModulus", unit: "mm", type: "input", default: "2.5", col: 12},
+        {label: "压力角", prop: "gearPressureAngle", unit: "°", type: "input", default: "20", col: 12},
+        {label: "变位系数", prop: "gearModificationCoefficient", unit: "", type: "input", default: "0", col: 12},
+        {label: "齿顶高系数", prop: "gearAddendumCoefficient", unit: "", type: "input", default: "1", col: 12},
+        {label: "顶隙系数", prop: "gearClearanceCoefficient", unit: "", type: "input", default: "0.25", col: 12},
+        {label: "齿宽", prop: "gearFaceWidth", unit: "mm", type: "input", col: 12},
+        {label: "外径", prop: "gearOuterDiameter", unit: "mm", type: "input", col: 12},
       ],
       gearShapeItems: [
-        {label: "螺旋角", attr: "gearHelixAngle", unit: "°", type: "input", col: 12, gearType: 'oblique'},
+        {label: "螺旋角", prop: "gearHelixAngle", unit: "°", type: "input", col: 12, gearType: 'helical'},
         {
           label: "旋向",
-          attr: "gearHelixDirection",
+          prop: "gearHelixDirection",
           unit: "",
           type: "select",
           options: [{value: "right", label: "右旋"}, {value: "left", label: "左旋"},],
           col: 12,
-          gearType: 'oblique'
+          gearType: 'helical'
         },
-        {label: "顶锥角", attr: "gearTopConeAngle", unit: "°", type: "input", col: 8, gearType: 'bevel'},
-        {label: "根锥角", attr: "gearRootConeAngle", unit: "°", type: "input", col: 8, gearType: 'bevel'},
-        {label: "锥距", attr: "gearConeDistance", unit: "mm", type: "input", col: 8, gearType: 'bevel'},
-        {label: "鼓形量", attr: "gearDrumShapedSize", unit: "mm", type: "input", col: 8, gearType: 'drum'},
-        {label: "鼓齿外径", attr: "gearDrumOuterDiameter", unit: "mm", type: "input", col: 8, gearType: 'drum'},
-        {label: "中心半径", attr: "gearCenterRadius", unit: "mm", type: "input", col: 8, gearType: 'drum'},
+        {label: "顶锥角", prop: "gearTopConeAngle", unit: "°", type: "input", col: 8, gearType: 'bevel'},
+        {label: "根锥角", prop: "gearRootConeAngle", unit: "°", type: "input", col: 8, gearType: 'bevel'},
+        {label: "锥距", prop: "gearConeDistance", unit: "mm", type: "input", col: 8, gearType: 'bevel'},
+        {label: "鼓形量", prop: "gearDrumShapedSize", unit: "mm", type: "input", col: 8, gearType: 'drum'},
+        {label: "鼓齿外径", prop: "gearDrumOuterDiameter", unit: "mm", type: "input", col: 8, gearType: 'drum'},
+        {label: "中心半径", prop: "gearCenterRadius", unit: "mm", type: "input", col: 8, gearType: 'drum'},
       ],
       mountingItems: [
-        {label: "安装角", attr: "mountingAngle", unit: "°", type: "input", col: 12},
+        {label: "安装角", prop: "mountingAngle", unit: "°", type: "input", col: 12},
         {col: 12},
-        {label: "滚刀初始坐标", attr: "hobInitialPoint", unit: "mm", type: "array", col: 24},
-        {label: "安全距离", attr: "safeDistance", unit: "mm", type: "array", col: 24},
+        {label: "滚刀初始坐标", prop: "hobInitialPoint", unit: "mm", type: "array", col: 24},
+        {label: "安全距离", prop: "safeDistance", unit: "mm", type: "array", col: 24},
       ],
       cuttingItems: [
-        {label: "切削循环类型", attr: "pathId", unit: "", type: "select", options: [], col: 16},
-        {label: "切削次数", attr: "cuttingFrequency", unit: "次", type: "input", col: 12},
-        {label: "吃刀深度", attr: "cuttingDepth", unit: "mm", type: "input", col: 12},
-        {label: "滚刀转速", attr: "hobRotationSpeed", unit: "r/min", type: "input", col: 12},
+        {label: "切削循环类型", prop: "pathId", unit: "", type: "select", options: [], col: 16},
+        {label: "切削次数", prop: "cuttingFrequency", unit: "次", type: "input", col: 12},
+        {label: "吃刀深度", prop: "cuttingDepth", unit: "mm", type: "input", col: 12},
+        {label: "滚刀转速", prop: "hobRotationSpeed", unit: "r/min", type: "input", col: 12},
         {
           label: "滚刀旋转方向",
-          attr: "hobRotationDirection",
+          prop: "hobRotationDirection",
           unit: "",
           type: "select",
           options: [{value: "right", label: "右旋"}, {value: "left", label: "左旋"},],
@@ -501,35 +506,45 @@ export default {
         },
       ],
       feedItems: [
-        {label: "进给量", attr: "feedRate", unit: "mm/r", type: "input", col: 12},
+        {label: "进给量", prop: "feedRate", unit: "mm/r", type: "input", col: 12},
         {
           label: "轴向进给方向",
-          attr: "axialFeedDirection",
+          prop: "axialFeedDirection",
           unit: "",
           type: "select",
           options: [{value: "plus", label: "正向"}, {value: "minus", label: "负向"},],
           col: 12
         },
-        {label: "径向快速进给速度", attr: "radialRapidFeedSpeed", unit: "mm/min", type: "input", col: 12},
-        {label: "移动后暂停时间", attr: "pauseTimeAfterMove", unit: "s", type: "input", col: 12},
+        {label: "径向快速进给速度", prop: "radialRapidFeedSpeed", unit: "mm/min", type: "input", col: 12},
+        {label: "移动后暂停时间", prop: "pauseTimeAfterMove", unit: "s", type: "input", col: 12},
       ],
       fleeCutterItems: [
-        {label: "切削后窜刀", attr: "isFleeCutter", unit: "", type: "radio", default: 1, col: 16},
-        {label: "窜刀量", attr: "fleeCutterAmounts", unit: "mm", type: "input", col: 12},
-        {label: "窜刀齿轮数", attr: "fleeCutterGears", unit: "", type: "input", col: 12}
+        {label: "切削后窜刀", prop: "isFleeCutter", unit: "", type: "radio", default: 1, col: 16},
+        {label: "窜刀量", prop: "fleeCutterAmounts", unit: "mm", type: "input", col: 12},
+        {label: "窜刀齿轮数", prop: "fleeCutterGears", unit: "", type: "input", col: 12}
       ],
       otherItems: [
-        {label: "是否外支架", attr: "hasOuterSupport", unit: "", type: "radio", default: 1, col: 12},
-        {label: "是否夹具", attr: "hasFixture", unit: "", type: "radio", default: 1, col: 12},
-        {label: "是否冷却液", attr: "hasCoolant", unit: "", type: "radio", default: 1, col: 12},
-        {label: "是否同步取消", attr: "isSyncCanceled", unit: "", type: "radio", default: 1, col: 12},
+        {label: "是否外支架", prop: "hasOuterSupport", unit: "", type: "radio", default: 1, col: 12},
+        {label: "是否夹具", prop: "hasFixture", unit: "", type: "radio", default: 1, col: 12},
+        {label: "是否冷却液", prop: "hasCoolant", unit: "", type: "radio", default: 1, col: 12},
+        {label: "是否同步取消", prop: "isSyncCanceled", unit: "", type: "radio", default: 1, col: 12},
       ]
     }
   },
   created() {
     this.getContextList();
   },
+  mounted() {
+    this.init();
+  },
   methods: {
+    /** 初始化 */
+    init() {
+      this.form.gearType = ["cylinder", "spur"];
+      this.gearBasicItems.forEach(item => {
+        this.form[item.prop] = item.default !== undefined ? item.default : "";
+      });
+    },
     /** 机床、滚刀、路径、数控列表 */
     getContextList() {
       listMachine().then(response => {
@@ -544,7 +559,13 @@ export default {
       });
       listCnc().then(response => {
         this.cncList = response.rows;
-      })
+      });
+    },
+    /** 更新模型按钮 */
+    handleUpdateSVG() {
+      console.log(this.form)
+      this.$refs.SVGDiv.paramForm = this.form;
+      this.$refs.SVGDiv.handleUpdate();
     },
     /** 清空按钮 */
     reset() {
@@ -557,7 +578,12 @@ export default {
       this.currentPath = null;
       this.currentCnc = null;
     },
-    /** 选择齿轮设备 */
+    /** 输入处理 */
+    // 输入事件
+    onInput($event) {
+      this.$forceUpdate();
+    },
+    // 选择齿轮设备
     machineChange() {
       this.currentMachine = this.machineList.find(machine => machine.id === this.form.machineId);
       this.currentCnc = this.cncList.find(cnc => cnc.id === this.currentMachine.cncId);
