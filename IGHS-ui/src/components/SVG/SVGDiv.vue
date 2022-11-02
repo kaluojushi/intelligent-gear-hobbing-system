@@ -9,6 +9,7 @@
 <script>
 import SpurGear from "@/utils/SVG/SpurGear";
 import Status from "@/utils/SVG/Status";
+import "@/utils/SVG/lib/svg";
 
 export default {
   name: "SVGDiv",

@@ -555,7 +555,9 @@ export default {
       });
       listPath().then(response => {
         this.pathList = response.rows;
-        this.cuttingItems[0].options = this.pathList.map(i => {[i.value, i.label] = [i.id, i.pathName]; return i;});
+        this.pathList.forEach(i => {
+          this.cuttingItems[0].options.push({ value: i.id, label: i.pathName });
+        });
       });
       listCnc().then(response => {
         this.cncList = response.rows;
