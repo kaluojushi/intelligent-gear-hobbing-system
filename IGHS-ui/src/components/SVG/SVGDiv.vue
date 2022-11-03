@@ -7,7 +7,8 @@
 </template>
 
 <script>
-import SpurGear from "@/utils/SVG/SpurGear";
+import SpurGear from "@/utils/gear/SpurGear";
+import SpurGearDrawing from "@/utils/SVG/SpurGearDrawing";
 import Status from "@/utils/SVG/Status";
 import "@/utils/SVG/lib/svg";
 
@@ -17,21 +18,22 @@ export default {
     return {
       // 齿轮对象
       gear: null,
+      gearDrawing: null,
       // 参数信息列表、参数表单
       paramInfoList: [],
       paramForm: {},
       // SVG对象
       drawing: null,
       mainGroup: null,
-      ORIGIN: {X: 0, Y: 0},
+      ORIGIN: { X: 0, Y: 0 },
       exportedSVG: "",
       // 窗口信息
       drawingWidth: 0,
       drawingHeight: 0,
       // 线条样式
-      helperLinesStyle: {color: "blue", width: 0.04},
-      regularLinesStyle: {color: "black", width: 0.1},
-      markerLinesStyle: {color: "red", width: 0.04}
+      helperLinesStyle: { color: "blue", width: 0.04 },
+      regularLinesStyle: { color: "black", width: 0.1 },
+      markerLinesStyle: { color: "red", width: 0.04 }
     }
   },
   created() {
@@ -168,7 +170,7 @@ export default {
       this.paramInfoList.forEach(item => this.paramForm[item.prop] = item.initial || '');
     },
 
-    // 生成齿轮对象
+    // 生成齿轮对象、齿轮绘图对象、坐标、点集
     getNewGear() {
       this.gear = new SpurGear(this.paramForm);
       const status = this.gear.checkParams();
@@ -176,8 +178,9 @@ export default {
         return status;
       }
       this.paramForm = this.gear.calculateParams();
-      this.gear.setCenter(this.ORIGIN);
-      this.gear.update();
+      this.gearDrawing = new SpurGearDrawing(this.gear);
+      this.gearDrawing.setCenter(this.ORIGIN);
+      this.gearDrawing.update();
       return Status.OK;
     },
 
@@ -188,19 +191,19 @@ export default {
       topGroup.panZoom();
 
       const borderRatio = 0.02;
-      const border = borderRatio * Math.max(this.gear.position.width, this.gear.position.height);
-      const totalWidth = this.gear.position.width + 2 * border;
-      const totalHeight = this.gear.position.height + 2 * border;
+      const border = borderRatio * Math.max(this.gearDrawing.position.width, this.gearDrawing.position.height);
+      const totalWidth = this.gearDrawing.position.width + 2 * border;
+      const totalHeight = this.gearDrawing.position.height + 2 * border;
 
       const scalingFactor = Math.min(this.drawingWidth / totalWidth, this.drawingHeight / totalHeight);
-      this.mainGroup = topGroup.group().scale(scalingFactor, scalingFactor).x(-this.gear.position.center.X).y(-this.gear.position.center.Y);
+      this.mainGroup = topGroup.group().scale(scalingFactor, scalingFactor).x(-this.gearDrawing.position.center.X).y(-this.gearDrawing.position.center.Y);
       this.mainGroup.dx(this.drawingWidth / scalingFactor / 2);
       this.mainGroup.dy(this.drawingHeight / scalingFactor / 2);
 
       this.mainGroup.stroke(this.regularLinesStyle).fill("none");
 
-      const crossMarkerLength = Math.min(this.gear.params.gearCircularPitch / 2, this.gear.position.width / 30);
-      this.gear.createGraphics(this.mainGroup, crossMarkerLength, this.regularLinesStyle, this.helperLinesStyle, this.markerLinesStyle);
+      const crossMarkerLength = Math.min(this.gear.params.gearCircularPitch / 2, this.gearDrawing.position.width / 30);
+      this.gearDrawing.createGraphics(this.mainGroup, crossMarkerLength, this.regularLinesStyle, this.helperLinesStyle, this.markerLinesStyle);
     },
 
     // 给出导出SVG
@@ -208,17 +211,17 @@ export default {
       const pxPerMm = 3.543307;
 
       const borderRatio = 0.05;
-      const border = borderRatio * Math.max(this.gear.position.width, this.gear.position.height);
-      const totalWidth = this.gear.position.width + 2 * border;
-      const totalHeight = this.gear.position.height + 2 * border;
+      const border = borderRatio * Math.max(this.gearDrawing.position.width, this.gearDrawing.position.height);
+      const totalWidth = this.gearDrawing.position.width + 2 * border;
+      const totalHeight = this.gearDrawing.position.height + 2 * border;
 
       const drawingForExport = SVG("drawingForExport")
         .size(totalWidth + "mm", totalHeight + "mm")
-        .viewbox(this.gear.position.left - border, -this.gear.position.top - border, totalWidth, totalHeight);
+        .viewbox(this.gearDrawing.position.left - border, -this.gearDrawing.position.top - border, totalWidth, totalHeight);
       const topGroup = drawingForExport.group();
-      const crossMarkerLength = Math.min(this.gear.params.gearCircularPitch / 2, this.gear.position.width / 50);
-      this.gear.createGraphics(topGroup, crossMarkerLength, this.regularLinesStyle, this.helperLinesStyle, this.markerLinesStyle);
-      const exportedSVG = drawingForExport.exportSvg({whitespace: true});
+      const crossMarkerLength = Math.min(this.gear.params.gearCircularPitch / 2, this.gearDrawing.position.width / 50);
+      this.gearDrawing.createGraphics(topGroup, crossMarkerLength, this.regularLinesStyle, this.helperLinesStyle, this.markerLinesStyle);
+      const exportedSVG = drawingForExport.exportSvg({ whitespace: true });
       this.exportedSVG = exportedSVG;
     },
 

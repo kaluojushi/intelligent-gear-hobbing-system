@@ -37,8 +37,7 @@
                     <el-form-item :label="item.label">
                       <el-col :span="20">
                         <el-input v-if="item.type === 'input'" v-model="form[item.prop]"
-                                  :placeholder="'请输入' + item.label"
-                                  @input="onInput($event)" clearable></el-input>
+                                  :placeholder="'请输入' + item.label" clearable></el-input>
                       </el-col>
                       <el-col :span="4" class="item-unit" style="padding-left: 2px">
                         {{ item.unit }}
@@ -399,10 +398,7 @@ export default {
       // 标签卡激活内容
       activeName: "shape",
       // 表单
-      form: {
-        hobInitialPoint: [null, null, null],
-        safeDistance: [null, null, null],
-      },
+      form: {},
       // 齿轮类型选项
       gearTypeOptions: [{
         value: "cylinder",
@@ -466,6 +462,7 @@ export default {
         {label: "顶隙系数", prop: "gearClearanceCoefficient", unit: "", type: "input", default: "0.25", col: 12},
         {label: "齿宽", prop: "gearFaceWidth", unit: "mm", type: "input", col: 12},
         {label: "外径", prop: "gearOuterDiameter", unit: "mm", type: "input", col: 12},
+        {label: "中心孔直径", prop: "gearCenterHoleDiameter", unit: "mm", type: "input", default: "5", col: 12},
       ],
       gearShapeItems: [
         {label: "螺旋角", prop: "gearHelixAngle", unit: "°", type: "input", col: 12, gearType: 'helical'},
@@ -488,8 +485,8 @@ export default {
       mountingItems: [
         {label: "安装角", prop: "mountingAngle", unit: "°", type: "input", col: 12},
         {col: 12},
-        {label: "滚刀初始坐标", prop: "hobInitialPoint", unit: "mm", type: "array", col: 24},
-        {label: "安全距离", prop: "safeDistance", unit: "mm", type: "array", col: 24},
+        {label: "滚刀初始坐标", prop: "hobInitialPoint", unit: "mm", type: "array", default: new Array(3).fill(""), col: 24},
+        {label: "安全距离", prop: "safeDistance", unit: "mm", type: "array", default: new Array(3).fill(""), col: 24},
       ],
       cuttingItems: [
         {label: "切削循环类型", prop: "pathId", unit: "", type: "select", options: [], col: 16},
@@ -533,17 +530,24 @@ export default {
   },
   created() {
     this.getContextList();
+    this.init();
   },
   mounted() {
-    this.init();
+    // this.init();
   },
   methods: {
     /** 初始化 */
     init() {
       this.form.gearType = ["cylinder", "spur"];
-      this.gearBasicItems.forEach(item => {
-        this.form[item.prop] = item.default !== undefined ? item.default : "";
-      });
+      // this.gearBasicItems.forEach(item => {
+      //   this.form[item.prop] = item.default !== undefined ? item.default : "";
+      // });
+      for (const items of [this.gearBasicItems, this.gearShapeItems, this.mountingItems, this.cuttingItems, this.feedItems, this.fleeCutterItems, this.otherItems]) {
+        items.forEach(item => {
+          this.form[item.prop] = item.default !== undefined ? item.default : "";
+        });
+      }
+      this.form = Object.assign({}, this.form, this.form);
     },
     /** 机床、滚刀、路径、数控列表 */
     getContextList() {
@@ -582,9 +586,9 @@ export default {
     },
     /** 输入处理 */
     // 输入事件
-    onInput($event) {
-      this.$forceUpdate();
-    },
+    // onInput($event) {
+    //   this.$forceUpdate();
+    // },
     // 选择齿轮设备
     machineChange() {
       this.currentMachine = this.machineList.find(machine => machine.id === this.form.machineId);

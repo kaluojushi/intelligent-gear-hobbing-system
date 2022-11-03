@@ -1,77 +1,18 @@
-import Status from "./Status";
-import CommonLib from "./CommonLib";
-import MathLib from "./MathLib";
-import ClipperLib from "./lib/clipper_unminified";
+import CommonLib from "@/utils/SVG/CommonLib";
+import MathLib from "@/utils/SVG/MathLib";
+import ClipperLib from "@/utils/SVG/lib/clipper_unminified";
 import "@/utils/SVG/lib/svg";
-import "./lib/svg.pan-zoom";
-import "./lib/svg.path";
-import "./lib/svg.export";
+import "@/utils/SVG/lib/svg.pan-zoom";
+import "@/utils/SVG/lib/svg.path";
+import "@/utils/SVG/lib/svg.export";
 
-export default class SpurGear {
-  constructor(form) {
-    this.params = CommonLib.stringObjToNumberObj(form);
+export default class SpurGearDrawing {
+  constructor(gear) {
+    this.gear = gear;
     this.position = {};
-    this.ORIGIN = {X: 0, Y: 0};
+    this.ORIGIN = { X: 0, Y: 0 };
     this.CLIPPER_SCALE = 100000;
     this.CLIPPER_LIGHTEN_FACTOR = 0.0005;
-  }
-
-  // 计算齿轮所有参数
-  calculateParams() {
-    const [m, z, alpha, ha$, c$] = CommonLib.getGearParams(this.params, ["modulus", "toothNumber", "pressureAngle", "addendumCoefficient", "clearanceCoefficient"]);
-    // 齿顶高、顶隙
-    const ha = this.params.gearAddendum = MathLib.floatCalculation(ha$ * m);
-    const c = this.params.gearClearance = MathLib.floatCalculation(c$ * m);
-    // 分度圆、齿顶圆、齿根圆、基圆
-    const d = this.params.gearPitchDiameter = MathLib.floatCalculation(m * z);
-    const r = this.params.gearPitchRadius = MathLib.floatCalculation(d / 2);
-    const da = this.params.gearAddendumDiameter = MathLib.floatCalculation(d + 2 * ha);
-    const ra = this.params.gearAddendumRadius = MathLib.floatCalculation(da / 2);
-    const hf = this.params.gearDedendum = MathLib.floatCalculation(ha + c);
-    const df = this.params.gearDedendumDiameter = MathLib.floatCalculation(d - 2 * hf);
-    const rf = this.params.gearDedendumRadius = MathLib.floatCalculation(df / 2);
-    const h = this.params.gearWholeDepth = MathLib.floatCalculation(ha + hf);
-    const db = this.params.gearBaseCircleDiameter = MathLib.floatCalculation(d * Math.cos(MathLib.degToRad(alpha)));
-    const rb = this.params.gearBaseCircleRadius = MathLib.floatCalculation(db / 2);
-    // 中心孔
-    const dh = this.params.gearCenterHoleDiameter;
-    const rh = this.params.gearCenterHoleRadius = MathLib.floatCalculation(dh / 2);
-    // 齿距、齿厚、齿槽宽
-    const p = this.params.gearCircularPitch = MathLib.floatCalculation(Math.PI * m);
-    const s = this.params.gearToothThickness = MathLib.floatCalculation(p / 2);
-    const e = this.params.gearSpaceWidth = MathLib.floatCalculation(p / 2);
-    // 其他
-    this.params.angleToothToTooth = MathLib.floatCalculation(MathLib.degToRad(360 / z));
-
-    return CommonLib.numberObjToStringObj(this.params);
-  }
-
-  // 验证参数
-  checkParams() {
-    const [m, z, alpha, ha$, c$, dh] = CommonLib.getGearParams(this.params, ["modulus", "toothNumber", "pressureAngle", "addendumCoefficient", "clearanceCoefficient", "centerHoleDiameter"]);
-    const errorMessage = [];
-
-    if (m <= 0) {
-      errorMessage.push("模数必须大于0");
-    }
-    if (z < 3) {
-      errorMessage.push("齿数必须不少于3");
-    }
-    if (alpha <= 0) {
-      errorMessage.push("压力角必须大于0");
-    }
-    const df$ = z - 2 * ha$ - 2 * c$;
-    if (df$ <= 0) {
-      errorMessage.push("齿顶高/顶隙系数过大");
-    }
-    if (df$ > 0 && (dh >= Math.min(df$ * m, m * z * Math.cos(MathLib.degToRad(alpha))))) {
-      errorMessage.push("中心孔直径过大");
-    }
-
-    if (errorMessage.length > 0) {
-      return Status.createError(errorMessage.join("；"))
-    }
-    return Status.OK;
   }
 
   // 设置中心点
@@ -81,7 +22,7 @@ export default class SpurGear {
 
   // 更新齿轮坐标与点集
   update() {
-    const ra = CommonLib.getGearParam(this.params, "addendumRadius");
+    const ra = CommonLib.getGearParam(this.gear.params, "addendumRadius");
     this.position.topLeft = MathLib.addVectors(this.position.center, MathLib.createPoint(-ra, ra));
     this.position.bottomRight = MathLib.addVectors(this.position.center, MathLib.createPoint(ra, -ra));
     this.position.width = this.position.bottomRight.X - this.position.topLeft.X;
@@ -95,15 +36,16 @@ export default class SpurGear {
 
   // 绘画图形
   createGraphics(parent, crossMarkerLength, regularLinesStyle, helperLinesStyle, markerLinesStyle) {
+    const [r, ra, rb, rf, rh] = CommonLib.getGearParams(this.gear.params, ["pitchRadius", "addendumRadius", "baseCircleRadius", "dedendumRadius", "centerHoleRadius"]);
     const gearGroup = parent.group();
     const helperGroup = gearGroup.group();
     helperGroup.stroke(helperLinesStyle).fill("none");
 
     // 绘画分度圆、齿顶圆、基圆、齿根圆
-    MathLib.drawCircle(helperGroup, this.ORIGIN, this.params.gearPitchRadius);
-    MathLib.drawCircle(helperGroup, this.ORIGIN, this.params.gearAddendumRadius);
-    MathLib.drawCircle(helperGroup, this.ORIGIN, this.params.gearBaseCircleRadius);
-    MathLib.drawCircle(helperGroup, this.ORIGIN, this.params.gearDedendumRadius);
+    MathLib.drawCircle(helperGroup, this.ORIGIN, r);
+    MathLib.drawCircle(helperGroup, this.ORIGIN, ra);
+    MathLib.drawCircle(helperGroup, this.ORIGIN, rb);
+    MathLib.drawCircle(helperGroup, this.ORIGIN, rf);
 
     // 绘画标记线
     const markerGroup = gearGroup.group();
@@ -113,8 +55,8 @@ export default class SpurGear {
     // 绘画中心孔
     const regularGroup = gearGroup.group();
     regularGroup.stroke(regularLinesStyle).fill("none");
-    if (this.params.gearCenterHoleRadius > 0) {
-      MathLib.drawCircle(regularGroup, this.ORIGIN, this.params.gearCenterHoleRadius);
+    if (rh > 0) {
+      MathLib.drawCircle(regularGroup, this.ORIGIN, rh);
     }
     // 插入齿轮路径
     this.insertGearSVGPath(regularGroup);
@@ -125,7 +67,7 @@ export default class SpurGear {
 
   // 创建齿刀
   createToothCutter() {
-    const [s, ha, hf, alpha, r] = CommonLib.getGearParams(this.params, ["toothThickness", "addendum", "dedendum", "pressureAngle", "pitchRadius"]);
+    const [s, ha, hf, alpha, r] = CommonLib.getGearParams(this.gear.params, ["toothThickness", "addendum", "dedendum", "pressureAngle", "pitchRadius"]);
     const cutterDepth = hf;
     const cutterOutsideLength = 3 * ha;
     const cosAlpha = Math.cos(MathLib.degToRad(alpha));
@@ -142,15 +84,15 @@ export default class SpurGear {
 
     const cutterPath = [bottomLeftCorner, topLeftCorner, topRightCorner, bottomRightCorner];
     const bottomLeftCornerIndex = 0;
-    return {cutterPath, bottomLeftCornerIndex};
+    return { cutterPath, bottomLeftCornerIndex };
   }
 
   // 创建齿刀路径
   createToothCutterPaths() {
-    const [r, ra] = CommonLib.getGearParams(this.params, ["pitchRadius", "addendumRadius"]);
+    const [r, ra] = CommonLib.getGearParams(this.gear.params, ["pitchRadius", "addendumRadius"]);
 
     const angleStepSize = Math.PI / 600;
-    const {cutterPath, bottomLeftCornerIndex} = this.createToothCutter();
+    const { cutterPath, bottomLeftCornerIndex } = this.createToothCutter();
     const cutterPaths = [cutterPath];
 
     let stepCounter = 0;
@@ -172,12 +114,12 @@ export default class SpurGear {
     }
 
     // console.log(cutterPaths)
-    return {cutterPaths, bottomLeftCornerIndex};
+    return { cutterPaths, bottomLeftCornerIndex };
   }
 
   // 创建齿切割路径
   createToothCutoutPath() {
-    const {cutterPaths, bottomLeftCornerIndex} = this.createToothCutterPaths();
+    const { cutterPaths, bottomLeftCornerIndex } = this.createToothCutterPaths();
 
     const cornersPath = cutterPaths.map(path => MathLib.clonePoint(path[bottomLeftCornerIndex]));
     cornersPath.reverse();
@@ -198,10 +140,10 @@ export default class SpurGear {
 
   // 创建一半的齿路径
   createHalfToothPath(group) {
-    const [p, ra, ha, r] = CommonLib.getGearParams(this.params, ["circularPitch", "addendumRadius", "addendum", "pitchRadius"]);
+    const [p, ra, ha, r] = CommonLib.getGearParams(this.gear.params, ["circularPitch", "addendumRadius", "addendum", "pitchRadius"]);
     const toothCutoutPath = this.createToothCutoutPath();
 
-    const angle = this.params.angleToothToTooth / 2;
+    const angle = this.gear.params.angleToothToTooth / 2;
     const cosAngle = Math.cos(angle);
     const sinAngle = Math.sin(angle);
 
@@ -270,14 +212,14 @@ export default class SpurGear {
 
   // 插入齿轮SVG路径
   insertGearSVGPath(group) {
-    const [z, ra] = CommonLib.getGearParams(this.params, ["toothNumber", "addendumRadius"]);
+    const [z, ra] = CommonLib.getGearParams(this.gear.params, ["toothNumber", "addendumRadius"]);
     const SVGPath = group.path();
-    const angleOffset = -Math.PI / 2 - this.params.angleToothToTooth / 2;
+    const angleOffset = -Math.PI / 2 - this.gear.params.angleToothToTooth / 2;
     // const angleOffset = 0;
 
     let firstSVGPoint;
     for (let i = 0; i < z; i++) {
-      const angle = i * this.params.angleToothToTooth + angleOffset;
+      const angle = i * this.gear.params.angleToothToTooth + angleOffset;
       const rotatedToothPoints = MathLib.rotatePathAroundCenter(this.toothPointsTemplate, this.ORIGIN, angle);
       if (i === 0) {
         firstSVGPoint = MathLib.createSVGPoint(rotatedToothPoints[0]);
