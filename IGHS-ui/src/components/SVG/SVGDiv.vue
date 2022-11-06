@@ -62,6 +62,12 @@ export default {
     getParamInfoList() {
       this.paramInfoList = [
         {
+          label: "齿轮类型",
+          prop: "gearType",
+          type: "cascader",
+          initial: ["cylinder", "spur"],
+        },
+        {
           label: "齿轮模数",
           symbol: "m",
           prop: "gearModulus",
@@ -172,13 +178,19 @@ export default {
 
     // 生成齿轮对象、齿轮绘图对象、坐标、点集
     getNewGear() {
-      this.gear = new SpurGear(this.paramForm);
+      switch (this.paramForm.gearType[1]) {
+        case "spur":
+          this.gear = new SpurGear(this.paramForm);
+          this.gearDrawing = new SpurGearDrawing(this.gear);
+          break;
+        default:
+          return Status.createError("齿轮类型错误");
+      }
       const status = this.gear.checkParams();
       if (!status.ok()) {
         return status;
       }
       this.paramForm = this.gear.calculateParams();
-      this.gearDrawing = new SpurGearDrawing(this.gear);
       this.gearDrawing.setCenter(this.ORIGIN);
       this.gearDrawing.update();
       return Status.OK;
@@ -227,9 +239,10 @@ export default {
 
     // 更新操作
     handleUpdate() {
+      this.drawing.clear();
       const status = this.getNewGear();
       if (!status.ok()) {
-        alert(status.message);
+        this.$message.error(status.message);
         return;
       }
       this.displayGear();

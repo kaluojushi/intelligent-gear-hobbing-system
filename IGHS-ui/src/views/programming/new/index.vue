@@ -1,10 +1,10 @@
 <template>
   <div class="app-container">
     <el-row :gutter="20">
-      <el-col :span="12">
+      <el-col :span="12" v-if="showParams">
         <el-card>
           <div slot="header" class="card-title">
-            新代码生成
+            参数设置
           </div>
           <el-tabs v-model="activeName">
             <el-tab-pane label="齿轮与齿形" name="shape">
@@ -50,7 +50,7 @@
               <div class="form-subtitle">
                 齿形数据
               </div>
-              <div v-if="!form.gearType" class="card-note">
+              <div v-if="!form.gearType.length" class="card-note">
                 请先选择齿轮类型
               </div>
               <el-form ref="form_gearShape" :model="form" label-width="75px"
@@ -322,24 +322,14 @@
           <el-form ref="bottom" label-width="95px" :inline="true">
             <el-form-item>
               <el-button type="primary" @click="handleUpdateSVG">更新模型</el-button>
-              <el-button type="success" @click="">生成路径</el-button>
+              <el-button type="success" @click="handleGeneratePath">生成路径</el-button>
               <el-button type="danger" @click="reset">清空</el-button>
             </el-form-item>
           </el-form>
         </el-card>
       </el-col>
 
-      <el-col :span="12">
-        <el-card>
-          <div slot="header" class="card-title">
-            SVG模型
-          </div>
-<!--          <el-image :src="require('@/assets/images/gear.png')"></el-image>-->
-          <SVGDiv ref="SVGDiv"></SVGDiv>
-        </el-card>
-      </el-col>
-
-      <el-col :span="12">
+      <el-col :span="12" v-if="showPath">
         <el-card>
           <div slot="header" class="card-title">
             加工路径
@@ -374,11 +364,22 @@
           <el-form ref="bottom" label-width="95px" :inline="true">
             <el-form-item>
               <el-button type="success" @click="">生成代码</el-button>
-              <el-button type="danger">返回</el-button>
+              <el-button type="danger" @click="backToParams">返回</el-button>
             </el-form-item>
           </el-form>
         </el-card>
       </el-col>
+
+      <el-col :span="12">
+        <el-card>
+          <div slot="header" class="card-title">
+            SVG模型
+          </div>
+<!--          <el-image :src="require('@/assets/images/gear.png')"></el-image>-->
+          <SVGDiv ref="SVGDiv"></SVGDiv>
+        </el-card>
+      </el-col>
+
     </el-row>
   </div>
 </template>
@@ -399,6 +400,9 @@ export default {
       activeName: "shape",
       // 表单
       form: {},
+      // 卡片展示内容
+      showParams: true,
+      showPath: false,
       // 齿轮类型选项
       gearTypeOptions: [{
         value: "cylinder",
@@ -533,21 +537,17 @@ export default {
     this.init();
   },
   mounted() {
-    // this.init();
   },
   methods: {
     /** 初始化 */
-    init() {
-      this.form.gearType = ["cylinder", "spur"];
-      // this.gearBasicItems.forEach(item => {
-      //   this.form[item.prop] = item.default !== undefined ? item.default : "";
-      // });
+    init(useDefault = true) {
+      this.form.gearType = useDefault ? ["cylinder", "spur"] : [];
       for (const items of [this.gearBasicItems, this.gearShapeItems, this.mountingItems, this.cuttingItems, this.feedItems, this.fleeCutterItems, this.otherItems]) {
         items.forEach(item => {
-          this.form[item.prop] = item.default !== undefined ? item.default : "";
+          this.form[item.prop] = useDefault && item.default !== undefined ? item.default : "";
         });
       }
-      this.form = Object.assign({}, this.form, this.form);
+      this.form = Object.assign({}, this.form, this.form);  // 响应式
     },
     /** 机床、滚刀、路径、数控列表 */
     getContextList() {
@@ -573,22 +573,19 @@ export default {
       this.$refs.SVGDiv.paramForm = this.form;
       this.$refs.SVGDiv.handleUpdate();
     },
+    /** 生成路径按钮 */
+    handleGeneratePath() {
+      [this.showParams, this.showPath] = [false, true];
+    },
     /** 清空按钮 */
     reset() {
-      this.form = {
-        hobInitialPoint: [null, null, null],
-        safeDistance: [null, null, null],
-      };
+      this.init(false);
       this.currentMachine = null;
       this.currentHob = null;
       this.currentPath = null;
       this.currentCnc = null;
     },
     /** 输入处理 */
-    // 输入事件
-    // onInput($event) {
-    //   this.$forceUpdate();
-    // },
     // 选择齿轮设备
     machineChange() {
       this.currentMachine = this.machineList.find(machine => machine.id === this.form.machineId);
@@ -599,7 +596,11 @@ export default {
     },
     pathChange() {
       this.currentPath = this.pathList.find(path => path.id === this.form.pathId);
-    }
+    },
+    /** 返回按钮 */
+    backToParams() {
+      [this.showParams, this.showPath] = [true, false];
+    },
   }
 }
 </script>
